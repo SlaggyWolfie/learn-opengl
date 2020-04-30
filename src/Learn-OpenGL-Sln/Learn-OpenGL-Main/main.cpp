@@ -3,7 +3,9 @@
 #include <iostream>
 #include <array>
 
-const int _init_error = -1;
+const int INIT_ERROR = -1;
+const unsigned int INITIAL_SCREEN_WIDTH = 800;
+const unsigned int INITIAL_SCREEN_HEIGHT = 600;
 
 // green-ish color
 const std::array<float, 4> _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
@@ -24,15 +26,17 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// MacOS-specific code
-	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#ifdef __APPLE__
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
 	// Create window
-	GLFWwindow* window = glfwCreateWindow(800, 600, "My OpenGL Window!", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT, "My OpenGL Window!", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window." << std::endl;
 		glfwTerminate();
-		return _init_error;
+		return INIT_ERROR;
 	}
 
 	glfwMakeContextCurrent(window);
@@ -45,18 +49,21 @@ int main()
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD." << std::endl;
-		return _init_error;
+		return INIT_ERROR;
 	}
 
 	// Set viewport size within window and assign resize function
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
 		process_input(window);
 
-		glClearColor(
+		// rendering
+		glClearColor
+		(
 			_clearColor[0],
 			_clearColor[1],
 			_clearColor[2],
@@ -65,6 +72,7 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// double buffering, and poll IO events
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -102,7 +110,7 @@ void set_clear_color(const std::array<float, 4>& color)
 	_clearColor = color;
 }
 
-void set_clear_color(float r, float g, float b, float a)
+void set_clear_color(const float r, const float g, const float b, const float a)
 {
 	_clearColor = { r, g, b, a };
 }
