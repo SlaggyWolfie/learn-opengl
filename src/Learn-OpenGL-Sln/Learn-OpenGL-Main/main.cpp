@@ -226,6 +226,12 @@ int main()
 		glfwPollEvents();
 	}
 
+	// Clean-up!
+	glDeleteVertexArrays(1, &vao);
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ebo);
+	glDeleteProgram(shaderProgram);
+
 	glfwTerminate();
 	return 0;
 }
