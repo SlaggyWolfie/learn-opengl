@@ -7,6 +7,6 @@ out vec3 vertexColor; // > specify a color output to the fragment shader
 
 void main()
 {
-    gl_Position = vec4(attr_pos, 1); 
+    gl_Position = vec4(attr_pos.x, -attr_pos.y, attr_pos.z, 1); 
     vertexColor = attr_color;
 }
