@@ -57,8 +57,8 @@ int main()
 	glViewport(0, 0, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	const Shader defaultShader("shaders/shader.vert", "shaders/shader.frag");
-	const unsigned int shaderProgram = defaultShader.ID;
+	const Shader shader("shaders/shader.vert", "shaders/shader.frag");
+	//const unsigned int shaderProgram = shader.ID;
 
 	// Basic rendering setup
 
@@ -93,7 +93,7 @@ int main()
 	//color attribute
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	
+
 	// > note that this is allowed, the call to glVertexAttribPointer registered VBO
 	// > as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -110,6 +110,10 @@ int main()
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
+		const float timeValue = float(glfwGetTime());
+		const float scale = sin(timeValue) / 2 + 0.5f;
+		const float horizontalOffset = scale * 0.5f;
+
 		// input (obviously)
 		process_input(window);
 
@@ -124,7 +128,9 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(shaderProgram);
+		//glUseProgram(shaderProgram);
+		shader.use();
+		shader.setUniform("horizontalOffset", horizontalOffset);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
