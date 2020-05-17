@@ -12,6 +12,11 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 	ID = compile_link(vCode, fCode);
 }
 
+Shader::~Shader()
+{
+	glDeleteProgram(ID);
+}
+
 void Shader::read(const std::string& vertexPath, const std::string& fragmentPath, std::string& vCode, std::string& fCode)
 {
 	std::ifstream vFile, fFile;
@@ -48,7 +53,7 @@ void Shader::read(const std::string& vertexPath, const std::string& fragmentPath
 	catch (std::ifstream::failure& exception)
 	{
 		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_FOUND_OR_READ" << std::endl;
-		// TODO fix shader failure
+		// TODO fix shader failure not stopping the rest of the process
 		//return;
 	}
 }
@@ -65,7 +70,7 @@ unsigned int Shader::compile_link(const std::string& vCode, const std::string& f
 	char infoLog[512];
 
 	// Vertex Shader
-	glCreateShader(GL_VERTEX_SHADER);
+	vID = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vID, 1, &vCode_c, nullptr);
 	glCompileShader(vID);
 
@@ -78,14 +83,14 @@ unsigned int Shader::compile_link(const std::string& vCode, const std::string& f
 	}
 
 	// Fragment Shader
-	glCreateShader(GL_FRAGMENT_SHADER);
+	fID = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fID, 1, &fCode_c, nullptr);
 	glCompileShader(fID);
 
 	glGetShaderiv(fID, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
-		glGetShaderInfoLog(vID, 512, nullptr, infoLog);
+		glGetShaderInfoLog(fID, 512, nullptr, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 
@@ -93,7 +98,7 @@ unsigned int Shader::compile_link(const std::string& vCode, const std::string& f
 	glAttachShader(ID, vID);
 	glAttachShader(ID, fID);
 	glLinkProgram(ID);
-
+	
 	glGetProgramiv(ID, GL_LINK_STATUS, &success);
 	if (!success)
 	{
