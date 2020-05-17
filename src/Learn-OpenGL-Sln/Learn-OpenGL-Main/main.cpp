@@ -101,9 +101,17 @@ int main()
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//---------------------------------------------------------------------------//
 
+	// time-based shader implementation
+	float timeValue = 0;
+	float greenValue = 0;
+	int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+	
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
+		timeValue = glfwGetTime();
+		greenValue = sin(timeValue) / 2 + 0.5f; // slight normalization here.
+		
 		// input (obviously)
 		process_input(window);
 
@@ -119,6 +127,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(shaderProgram);
+		glUniform4f(vertexColorLocation, 0, greenValue, 0, 1);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
