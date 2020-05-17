@@ -59,15 +59,16 @@ int main()
 
 	const Shader defaultShader("shaders/shader.vert", "shaders/shader.frag");
 	const unsigned int shaderProgram = defaultShader.ID;
-	
+
 	// Basic rendering setup
 
 	// Shape - Triangle
 	float vertices[]
 	{
-		-0.5f, -0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		 0.0f,  0.5f, 0.0f
+		// positions         // colors
+		-0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f
 	};
 
 	unsigned int vao, vbo;
@@ -85,9 +86,14 @@ int main()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	// set the vertex attribute pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+	//color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	
 	// > note that this is allowed, the call to glVertexAttribPointer registered VBO
 	// > as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -101,17 +107,9 @@ int main()
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//---------------------------------------------------------------------------//
 
-	// time-based shader implementation
-	float timeValue = 0;
-	float greenValue = 0;
-	int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-	
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
-		timeValue = glfwGetTime();
-		greenValue = sin(timeValue) / 2 + 0.5f; // slight normalization here.
-		
 		// input (obviously)
 		process_input(window);
 
@@ -127,7 +125,6 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(shaderProgram);
-		glUniform4f(vertexColorLocation, 0, greenValue, 0, 1);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
