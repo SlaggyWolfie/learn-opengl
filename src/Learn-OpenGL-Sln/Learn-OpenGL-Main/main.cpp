@@ -42,7 +42,6 @@ void set_clear_color(const std::array<float, 4>& color);
 void set_clear_color(float r, float g, float b, float a);
 
 void draw_triangle(GLFWwindow* window, const unsigned shaderProgram);
-void draw_polygon(GLFWwindow* window, const unsigned shaderProgram);
 void draw_polygon_ebo(GLFWwindow* window, const unsigned shaderProgram);
 void ex_draw_two_triangles(GLFWwindow* window, const unsigned shaderProgram);
 void ex_draw_two_triangles_2(GLFWwindow* window, const unsigned shaderProgram);
@@ -92,7 +91,6 @@ int main()
 	//draw_triangle(window, shaderProgram);
 	//draw_polygon_ebo(window, shaderProgram);
 	//ex_draw_two_triangles(window, shaderProgram);
-	//draw_polygon(window, shaderProgram);
 	//ex_draw_two_triangles_2(window, shaderProgram);
 	ex_draw_two_triangles_3(window, shaderProgram);
 
@@ -221,89 +219,6 @@ void draw_triangle(GLFWwindow* window, const unsigned shaderProgram)
 
 		// > no need to unbind it every time 
 		//glBindVertexArray(0);
-
-		// double buffering, and poll IO events
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-
-	// Clean-up!
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(1, &vbo);
-}
-
-// Not working?
-void draw_polygon(GLFWwindow* window, const unsigned shaderProgram)
-{
-	// Basic rendering setup
-
-	// Shape - Rectangle (but 2 Tri's)
-	float vertices[]
-	{
-		// > first triangle
-		 0.5f,  0.5f, 0.0f,  // > top right
-		 0.5f, -0.5f, 0.0f,  // > bottom right
-		-0.5f,  0.5f, 0.0f,  // > top left 
-		// > second triangle
-		 0.5f, -0.5f, 0.0f,  // > bottom right
-		-0.5f, -0.5f, 0.0f,  // > bottom left
-		-0.5f,  0.5f, 0.0f   // > top left
-	};
-
-	unsigned int vao, vbo;
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-
-	//---------------------------------------------------------------------------//
-	// > bind the Vertex Array Object first, then bind and set vertex buffer(s),
-	// > and then configure vertex attributes(s). 
-	// bind vertex array object
-	glBindVertexArray(vao);
-
-	// copy vertex array in a vertex buffer for OpenGL
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// > note that this is allowed, the call to glVertexAttribPointer registered VBO
-	// > as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// > You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO,
-	// > but this rarely happens. Modifying other VAOs requires a call to glBindVertexArray
-	// > anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-	glBindVertexArray(0);
-
-	// > uncomment this call to draw in wireframe polygon
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//---------------------------------------------------------------------------//
-
-	// Program Loop (Render Loop)
-	while (!glfwWindowShouldClose(window))
-	{
-		// input (obviously)
-		process_input(window);
-
-		// rendering
-		glClearColor
-		(
-			_clearColor[0],
-			_clearColor[1],
-			_clearColor[2],
-			_clearColor[3]
-		);
-
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		glUseProgram(shaderProgram);
-
-		// > seeing as we only have a single VAO there's no need to bind it every time,
-		// > but we'll do so to keep things a bit more organized
-		glBindVertexArray(vao);
-
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// > no need to unbind it every time 
-		glBindVertexArray(0);
 
 		// double buffering, and poll IO events
 		glfwSwapBuffers(window);
