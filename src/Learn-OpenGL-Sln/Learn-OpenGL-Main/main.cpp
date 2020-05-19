@@ -61,9 +61,9 @@ int main()
 	//----- end of window setup -----//
 
 	// Generate & configure GL texture
-	unsigned int textureID = 0;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	unsigned int texID_container, texID_awesomeface;
+	glGenTextures(1, &texID_container);
+	glBindTexture(GL_TEXTURE_2D, texID_container);
 
 	// Textures repeat (mirrored)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -80,6 +80,8 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	stbi_set_flip_vertically_on_load(true);
+	
 	// Load texture image data
 	int width, height, numberChannels;
 	unsigned char* data = stbi_load("assets/container.jpg", &width, &height, &numberChannels, 0);
@@ -94,8 +96,31 @@ int main()
 		std::cout << "ERROR::TEXTURE::FAILED_TO_LOAD\n" << "assets/containers.jpg" << std::endl;
 	}
 
+	glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(data);
 
+	glGenTextures(1, &texID_awesomeface);
+	glBindTexture(GL_TEXTURE_2D, texID_awesomeface);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	data = stbi_load("assets/awesomeface.png", &width, &height, &numberChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "ERROR::TEXTURE::FAILED_TO_LOAD\n" << "assets/awesomeface.png" << std::endl;
+	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	stbi_image_free(data);
+	
 	// Start initializing vertices, vaos, vbos, and such
 	const Shader shader("shaders/shader.vert", "shaders/shader.frag");
 
@@ -163,6 +188,10 @@ int main()
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//---------------------------------------------------------------------------//
 
+	shader.use();
+	shader.setUniform("textureSampler1", 0);
+	shader.setUniform("textureSampler2", 1);
+	
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
@@ -180,7 +209,12 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glBindTexture(GL_TEXTURE_2D, textureID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texID_container);
+		
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texID_awesomeface);
+		
 		shader.use();
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,

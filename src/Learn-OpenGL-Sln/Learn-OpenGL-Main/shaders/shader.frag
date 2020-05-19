@@ -5,9 +5,13 @@ out vec4 fragColor;
 in vec3 vertexColor; // lerped
 in vec2 textureCoordinate;
 
-uniform sampler2D textureSampler;
+uniform sampler2D textureSampler1;
+uniform sampler2D textureSampler2;
 
 void main()
 {
-	fragColor = texture(textureSampler, textureCoordinate) * vec4(vertexColor, 1);
+	fragColor = mix(
+		texture(textureSampler1, textureCoordinate), 
+		texture(textureSampler2, textureCoordinate), 
+		0.2f);
 } 
