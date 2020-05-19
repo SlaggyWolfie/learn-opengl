@@ -12,6 +12,6 @@ void main()
 {
 	fragColor = mix( 
 		texture(textureSampler1, textureCoordinate), 
-		texture(textureSampler2, vec2(1 - textureCoordinate.s, textureCoordinate.t)),
+		texture(textureSampler2, vec2(textureCoordinate.s, textureCoordinate.t) * 4f),
 		0.2f);
 } 
