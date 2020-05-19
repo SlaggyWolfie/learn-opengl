@@ -64,8 +64,8 @@ unsigned int Shader::compile_link(const std::string& vCode, const std::string& f
 	const char* fCode_c = fCode.c_str();
 
 	//-----COMPILE & LINK-----//
-	unsigned int vID = -1;
-	unsigned int fID = -1;
+	unsigned int vID = 0;
+	unsigned int fID = 0;
 	int success = -1;
 	char infoLog[512];
 

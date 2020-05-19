@@ -3,6 +3,7 @@
 #include <iostream>
 #include <array>
 #include "Shader.hpp"
+#include "stb_image.h"
 
 const int INIT_ERROR = -1;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
@@ -15,13 +16,13 @@ std::array<float, 4> _clearColor = _defaultClearColor;
 
 void framebuffer_size_callback(GLFWwindow* window, const int width, const int height);
 void process_input(GLFWwindow* window);
-void set_clear_color(const std::array<float, 4>& color);
-void set_clear_color(float r, float g, float b, float a);
 
 int main()
 {
 	// Initialize GLFW context with OpenGL version 3.3 using the Core OpenGL profile
 	glfwInit();
+
+	//-----Setup window-----//
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -57,23 +58,71 @@ int main()
 	glViewport(0, 0, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+	//----- end of window setup -----//
+
+	// Generate & configure GL texture
+	unsigned int textureID = 0;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+
+	// Textures repeat (mirrored)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+	// Textures clamp to the edge, and after that draw a color
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	//float borderColor[] = { 1, 1, 0, 1 }; // brown-ish?
+	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Load texture image data
+	int width, height, numberChannels;
+	unsigned char* data = stbi_load("assets/container.jpg", &width, &height, &numberChannels, 0);
+
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "ERROR::TEXTURE::FAILED_TO_LOAD\n" << "assets/containers.jpg" << std::endl;
+	}
+
+	stbi_image_free(data);
+
+	// Start initializing vertices, vaos, vbos, and such
 	const Shader shader("shaders/shader.vert", "shaders/shader.frag");
-	//const unsigned int shaderProgram = shader.ID;
 
 	// Basic rendering setup
 
-	// Shape - Triangle
-	float vertices[]
+	// Shape - Rectangle
+	float vertices[] = 
 	{
-		// positions         // colors
-		-0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
-		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f
+		// positions          // colors           // texture coords
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
 	};
 
-	unsigned int vao, vbo;
+	// > note that we start from 0!
+	unsigned int indices[]
+	{
+		0, 1, 3,   // > first triangle
+		1, 2, 3    // > second triangle
+	};
+
+	
+	unsigned int vao, vbo, ebo;
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &ebo);
 
 	//---------------------------------------------------------------------------//
 	// > bind the Vertex Array Object first, then bind and set vertex buffer(s),
@@ -85,14 +134,21 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
 	// set the vertex attribute pointers
 	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	//color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+
+	// uv attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	// > note that this is allowed, the call to glVertexAttribPointer registered VBO
 	// > as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
@@ -110,10 +166,6 @@ int main()
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
-		const float timeValue = float(glfwGetTime());
-		const float scale = sin(timeValue) / 2 + 0.5f;
-		const float horizontalOffset = scale * 0.5f;
-
 		// input (obviously)
 		process_input(window);
 
@@ -128,15 +180,13 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//glUseProgram(shaderProgram);
+		glBindTexture(GL_TEXTURE_2D, textureID);
 		shader.use();
-		shader.setUniform("horizontalOffset", horizontalOffset);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
 		glBindVertexArray(vao);
-
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// > no need to unbind it every time 
 		//glBindVertexArray(0);
@@ -149,6 +199,7 @@ int main()
 	// Clean-up!
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ebo);
 
 	glfwTerminate();
 	return 0;
@@ -168,22 +219,12 @@ void process_input(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 	{
-		set_clear_color(_defaultClearColor);
+		_clearColor = _defaultClearColor;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
 	{
 		// mildly dark red
-		set_clear_color(0.7f, 0, 0, 1);
+		_clearColor = { 0.7f, 0, 0, 1 };
 	}
-}
-
-void set_clear_color(const std::array<float, 4>& color)
-{
-	_clearColor = color;
-}
-
-void set_clear_color(const float r, const float g, const float b, const float a)
-{
-	_clearColor = { r, g, b, a };
 }
