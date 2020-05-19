@@ -11,8 +11,9 @@ const unsigned int INITIAL_SCREEN_HEIGHT = 600;
 
 // green-ish color
 const std::array<float, 4> _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
-
 std::array<float, 4> _clearColor = _defaultClearColor;
+
+float mix_ratio = 0.2f;
 
 void framebuffer_size_callback(GLFWwindow* window, const int width, const int height);
 void process_input(GLFWwindow* window);
@@ -103,10 +104,10 @@ int main()
 	glBindTexture(GL_TEXTURE_2D, texID_awesomeface);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -219,6 +220,7 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texID_awesomeface);
 		
 		shader.use();
+		shader.setUniform("mixRatio", mix_ratio);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
@@ -263,5 +265,17 @@ void process_input(GLFWwindow* window)
 	{
 		// mildly dark red
 		_clearColor = { 0.7f, 0, 0, 1 };
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		mix_ratio += 0.01f;
+		mix_ratio = std::min(mix_ratio, 1.0f);
+	}
+	
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		mix_ratio -= 0.01f;
+		mix_ratio = std::max(mix_ratio, 0.0f);
 	}
 }
