@@ -230,8 +230,8 @@ int main()
 
 		// Answer: Since we switched the order of operations, now we first translate and then rotate.
 		// Which means that we are effectively rotating around the origin now, whereas before we were
-		// rotating around the point we translated from. This is due to the order of the operations. 
-		
+		// rotating around the point we translated from. This is due to the order of the operations.
+
 		// input (obviously)
 		process_input(window);
 
@@ -259,6 +259,15 @@ int main()
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
 		glBindVertexArray(vao);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// Exercise 2
+		trans = glm::mat4(1);
+		const float scale = float(sin(glfwGetTime())) / 2 + 0.5f;
+		trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0));
+		trans = glm::scale(trans, glm::vec3(scale, scale, 1));
+
+		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, &trans[0][0]);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// > no need to unbind it every time 
