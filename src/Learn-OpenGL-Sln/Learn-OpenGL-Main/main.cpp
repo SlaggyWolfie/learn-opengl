@@ -221,8 +221,16 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		trans = glm::mat4(1);
-		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0));
+
+		//trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0));
+		//trans = glm::rotate(trans, float(glfwGetTime()), glm::vec3(0, 0, 1));
+
 		trans = glm::rotate(trans, float(glfwGetTime()), glm::vec3(0, 0, 1));
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0));
+
+		// Answer: Since we switched the order of operations, now we first translate and then rotate.
+		// Which means that we are effectively rotating around the origin now, whereas before we were
+		// rotating around the point we translated from. This is due to the order of the operations. 
 		
 		// input (obviously)
 		process_input(window);
