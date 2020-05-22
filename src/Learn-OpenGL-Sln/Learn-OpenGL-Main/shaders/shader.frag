@@ -2,7 +2,7 @@
 
 out vec4 fragColor;  
 
-in vec3 vertexColor; // lerped
+//in vec3 vertexColor;
 in vec2 textureCoordinate;
 
 uniform sampler2D textureSampler1;

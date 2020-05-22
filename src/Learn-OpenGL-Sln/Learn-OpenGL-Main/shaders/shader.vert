@@ -4,12 +4,14 @@ layout (location = 0) in vec3 attr_pos;
 layout (location = 1) in vec3 attr_color;
 layout (location = 2) in vec2 attr_uv;  
   
-out vec3 vertexColor; // > specify a color output to the fragment shader
+//out vec3 vertexColor;
 out vec2 textureCoordinate;
+
+uniform mat4 transform;
 
 void main()
 {
-    gl_Position = vec4(attr_pos, 1);
-    vertexColor = attr_color;
+    gl_Position = transform * vec4(attr_pos, 1);
+//    vertexColor = attr_color;
     textureCoordinate = attr_uv;
 }

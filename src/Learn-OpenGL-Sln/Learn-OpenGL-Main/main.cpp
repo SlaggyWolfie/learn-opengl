@@ -1,9 +1,16 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include <array>
-#include "Shader.hpp"
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 #include "stb_image.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "Shader.hpp"
 
 const int INIT_ERROR = -1;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
@@ -82,7 +89,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	stbi_set_flip_vertically_on_load(true);
-	
+
 	// Load texture image data
 	int width, height, numberChannels;
 	unsigned char* data = stbi_load("assets/container.jpg", &width, &height, &numberChannels, 0);
@@ -121,14 +128,14 @@ int main()
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(data);
-	
+
 	// Start initializing vertices, vaos, vbos, and such
 	const Shader shader("shaders/shader.vert", "shaders/shader.frag");
 
 	// Basic rendering setup
 
 	// Shape - Rectangle
-	float vertices[] = 
+	float vertices[] =
 	{
 		// positions          // colors           // texture coords
 		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
@@ -144,7 +151,7 @@ int main()
 		1, 2, 3    // > second triangle
 	};
 
-	
+
 	unsigned int vao, vbo, ebo;
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -192,10 +199,31 @@ int main()
 	shader.use();
 	shader.setUniform("textureSampler1", 0);
 	shader.setUniform("textureSampler2", 1);
-	
+
+	glm::vec4 test_vec(1, 0, 0, 1);
+	glm::mat4 test_transform(1);
+	test_transform = glm::translate(test_transform, glm::vec3(1, 1, 0));
+	test_vec = test_transform * test_vec;
+
+	std::cout << "("
+		<< test_vec.x << ", "
+		<< test_vec.y << ", "
+		<< test_vec.z << ") "
+		<< std::endl;
+
+	glm::mat4 trans(1);
+	trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0, 0, 1));
+	trans = glm::scale(trans, glm::vec3(0.5));
+
+	const unsigned int transformLocation = glGetUniformLocation(shader.ID, "transform");
+
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
+		trans = glm::mat4(1);
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0));
+		trans = glm::rotate(trans, float(glfwGetTime()), glm::vec3(0, 0, 1));
+		
 		// input (obviously)
 		process_input(window);
 
@@ -212,12 +240,13 @@ int main()
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texID_container);
-		
+
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texID_awesomeface);
-		
+
 		shader.use();
 		shader.setUniform("mixRatio", mix_ratio);
+		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans));
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
@@ -262,7 +291,7 @@ void process_input(GLFWwindow* window)
 		mix_ratio += 0.01f;
 		mix_ratio = std::min(mix_ratio, 1.0f);
 	}
-	
+
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
 		mix_ratio -= 0.01f;
