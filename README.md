@@ -10,5 +10,6 @@ Currently using Visual Studio 2019 (Visual Studio 16).
 
 Using several external libraries, currently:
 - GLFW (v3.3.2) — built from source.
-- GLAD
-- stb_image
+- GLAD — include-only, built online (?)
+- stb_image — directly included in project
+- GLM (v0.9.9.8) — include-only
