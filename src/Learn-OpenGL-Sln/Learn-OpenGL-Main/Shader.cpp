@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 {
@@ -98,7 +99,7 @@ unsigned int Shader::compile_link(const std::string& vCode, const std::string& f
 	glAttachShader(ID, vID);
 	glAttachShader(ID, fID);
 	glLinkProgram(ID);
-	
+
 	glGetProgramiv(ID, GL_LINK_STATUS, &success);
 	if (!success)
 	{
@@ -117,17 +118,42 @@ void Shader::use() const
 	glUseProgram(ID);
 }
 
-void Shader::setUniform(const std::string& name, bool value) const
+void Shader::set(const std::string& name, const bool value) const
 {
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), static_cast<int>(value));
+	glUniform1i(getLocation(name), static_cast<int>(value));
 }
 
-void Shader::setUniform(const std::string& name, int value) const
+void Shader::set(const std::string& name, const int value) const
 {
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+	glUniform1i(getLocation(name), value);
 }
 
-void Shader::setUniform(const std::string& name, float value) const
+void Shader::set(const std::string& name, const float value) const
 {
-	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+	glUniform1f(getLocation(name), value);
+}
+
+void Shader::set(const std::string& name, const glm::vec2& value) const
+{
+	glUniform2fv(getLocation(name), 1, glm::value_ptr(value));
+}
+
+void Shader::set(const std::string& name, const glm::vec3& value) const
+{
+	glUniform3fv(getLocation(name), 1, glm::value_ptr(value));
+}
+
+void Shader::set(const std::string& name, const glm::vec4& value) const
+{
+	glUniform4fv(getLocation(name), 1, glm::value_ptr(value));
+}
+
+void Shader::set(const std::string& name, const glm::mat4& value) const
+{
+	glUniformMatrix4fv(getLocation(name), 1, GL_FALSE, glm::value_ptr(value));
+}
+
+unsigned Shader::getLocation(const std::string& name) const
+{
+	return glGetUniformLocation(ID, name.c_str());
 }

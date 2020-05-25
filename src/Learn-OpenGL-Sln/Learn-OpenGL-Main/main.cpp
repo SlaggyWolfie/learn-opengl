@@ -230,8 +230,8 @@ int main()
 	//---------------------------------------------------------------------------//
 
 	shader.use();
-	shader.setUniform("textureSampler1", 0);
-	shader.setUniform("textureSampler2", 1);
+	shader.set("textureSampler1", 0);
+	shader.set("textureSampler2", 1);
 
 	const glm::mat4 identity(1);
 	//glm::mat4 model = glm::rotate(identity, glm::radians(-55.0f), glm::vec3(1, 0, 0));
@@ -241,13 +241,8 @@ int main()
 		glm::radians(45.0f), float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 	//glm::radians(70.0f), float(INITIAL_SCREEN_WIDTH + 200) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
-	const int modelLocation = glGetUniformLocation(shader.ID, "model");
-	const int viewLocation = glGetUniformLocation(shader.ID, "view");
-	const int projectionLocation = glGetUniformLocation(shader.ID, "projection");
-
-	//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
-	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
+	shader.set("view", view);
+	shader.set("projection", projection);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -275,7 +270,7 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texID_awesomeface);
 
 		shader.use();
-		shader.setUniform("mixRatio", mix_ratio);
+		shader.set("mixRatio", mix_ratio);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
@@ -290,7 +285,7 @@ int main()
 			model = glm::translate(model, cubePositions[i]);
 			model = glm::rotate(model, angle, glm::vec3(1, 0.3f, 0.5f));
 
-			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+			shader.set("model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
