@@ -236,8 +236,10 @@ int main()
 	const glm::mat4 identity(1);
 	//glm::mat4 model = glm::rotate(identity, glm::radians(-55.0f), glm::vec3(1, 0, 0));
 	const glm::mat4 view = glm::translate(identity, glm::vec3(0, 0, -3));
+	//const glm::mat4 view = glm::translate(identity, glm::vec3(0, 0, -10));
 	const glm::mat4 projection = glm::perspective(
 		glm::radians(45.0f), float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
+	//glm::radians(70.0f), float(INITIAL_SCREEN_WIDTH + 200) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
 	const int modelLocation = glGetUniformLocation(shader.ID, "model");
 	const int viewLocation = glGetUniformLocation(shader.ID, "view");
@@ -281,9 +283,12 @@ int main()
 
 		for (unsigned int i = 0; i < 10; i++)
 		{
+			float angle = glm::radians(float(20 * i));
+			if (!(i % 3)) angle += float(glfwGetTime());
+
 			glm::mat4 model = identity;
 			model = glm::translate(model, cubePositions[i]);
-			model = glm::rotate(model, float(glfwGetTime()) * glm::radians(20.0f * i), glm::vec3(1, 0.3f, 0.5f));
+			model = glm::rotate(model, angle, glm::vec3(1, 0.3f, 0.5f));
 
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
 
