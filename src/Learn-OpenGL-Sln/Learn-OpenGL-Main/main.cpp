@@ -134,28 +134,53 @@ int main()
 
 	// Basic rendering setup
 
-	// Shape - Rectangle
-	float vertices[] =
-	{
-		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+	float vertices[] = {
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	// > note that we start from 0!
-	unsigned int indices[]
-	{
-		0, 1, 3,   // > first triangle
-		1, 2, 3    // > second triangle
-	};
-
-
-	unsigned int vao, vbo, ebo;
+	unsigned int vao, vbo;
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &ebo);
 
 	//---------------------------------------------------------------------------//
 	// > bind the Vertex Array Object first, then bind and set vertex buffer(s),
@@ -167,21 +192,14 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
 	// set the vertex attribute pointers
 	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	//color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
 	// uv attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	// > note that this is allowed, the call to glVertexAttribPointer registered VBO
 	// > as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
@@ -200,6 +218,22 @@ int main()
 	shader.setUniform("textureSampler1", 0);
 	shader.setUniform("textureSampler2", 1);
 
+	const glm::mat4 identity(1);
+	//glm::mat4 model = glm::rotate(identity, glm::radians(-55.0f), glm::vec3(1, 0, 0));
+	const glm::mat4 view = glm::translate(identity, glm::vec3(0, 0, -3));
+	const glm::mat4 projection = glm::perspective(
+		glm::radians(45.0f), float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
+
+	const int modelLocation = glGetUniformLocation(shader.ID, "model");
+	const int viewLocation = glGetUniformLocation(shader.ID, "view");
+	const int projectionLocation = glGetUniformLocation(shader.ID, "projection");
+
+	//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
+
+	glEnable(GL_DEPTH_TEST);
+	
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
@@ -215,7 +249,7 @@ int main()
 			_clearColor[3]
 		);
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texID_container);
@@ -225,11 +259,16 @@ int main()
 
 		shader.use();
 		shader.setUniform("mixRatio", mix_ratio);
+		
+		glm::mat4 model = glm::rotate(identity, float(glfwGetTime()) * glm::radians(50.0f), glm::vec3(0.5f, 1, 0));
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
 		glBindVertexArray(vao);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// > no need to unbind it every time 
 		//glBindVertexArray(0);
@@ -242,7 +281,7 @@ int main()
 	// Clean-up!
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &ebo);
+	//glDeleteBuffers(1, &ebo);
 
 	glfwTerminate();
 	return 0;
