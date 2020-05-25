@@ -7,11 +7,9 @@ layout (location = 2) in vec2 attr_uv;
 //out vec3 vertexColor;
 out vec2 textureCoordinate;
 
-uniform mat4 transform;
-
 void main()
 {
-    gl_Position = transform * vec4(attr_pos, 1);
+    gl_Position = vec4(attr_pos, 1);
 //    vertexColor = attr_color;
     textureCoordinate = attr_uv;
 }

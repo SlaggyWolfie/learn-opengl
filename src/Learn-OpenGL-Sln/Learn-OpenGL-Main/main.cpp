@@ -200,38 +200,9 @@ int main()
 	shader.setUniform("textureSampler1", 0);
 	shader.setUniform("textureSampler2", 1);
 
-	glm::vec4 test_vec(1, 0, 0, 1);
-	glm::mat4 test_transform(1);
-	test_transform = glm::translate(test_transform, glm::vec3(1, 1, 0));
-	test_vec = test_transform * test_vec;
-
-	std::cout << "("
-		<< test_vec.x << ", "
-		<< test_vec.y << ", "
-		<< test_vec.z << ") "
-		<< std::endl;
-
-	glm::mat4 trans(1);
-	trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0, 0, 1));
-	trans = glm::scale(trans, glm::vec3(0.5));
-
-	const unsigned int transformLocation = glGetUniformLocation(shader.ID, "transform");
-
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
-		trans = glm::mat4(1);
-
-		//trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0));
-		//trans = glm::rotate(trans, float(glfwGetTime()), glm::vec3(0, 0, 1));
-
-		trans = glm::rotate(trans, float(glfwGetTime()), glm::vec3(0, 0, 1));
-		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0));
-
-		// Answer: Since we switched the order of operations, now we first translate and then rotate.
-		// Which means that we are effectively rotating around the origin now, whereas before we were
-		// rotating around the point we translated from. This is due to the order of the operations.
-
 		// input (obviously)
 		process_input(window);
 
@@ -254,20 +225,10 @@ int main()
 
 		shader.use();
 		shader.setUniform("mixRatio", mix_ratio);
-		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans));
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
 		glBindVertexArray(vao);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		// Exercise 2
-		trans = glm::mat4(1);
-		const float scale = float(sin(glfwGetTime())) / 2 + 0.5f;
-		trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0));
-		trans = glm::scale(trans, glm::vec3(scale, scale, 1));
-
-		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, &trans[0][0]);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// > no need to unbind it every time 
