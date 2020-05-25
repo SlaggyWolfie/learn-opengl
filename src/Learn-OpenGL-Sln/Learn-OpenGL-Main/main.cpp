@@ -246,9 +246,30 @@ int main()
 
 	glEnable(GL_DEPTH_TEST);
 
+	const glm::vec3 cameraPosition(0, 0, 3);
+	const glm::vec3 cameraTarget(0);
+	const glm::vec3 cameraAntiDirection = glm::normalize(cameraTarget - cameraPosition);
+	const glm::vec3 up(0, 1, 0);
+	const glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraAntiDirection));
+	const glm::vec3 cameraUp = glm::normalize(glm::cross(cameraAntiDirection, cameraRight));
+	const glm::mat4 c_view = glm::lookAt(cameraPosition, cameraTarget, up);
+
+	shader.set("view", c_view);
+
+	const float radius = 10;
+	float camX = 0, camZ = 0;
+	glm::mat4 rot_view = glm::mat4(1);
+
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
+		const float timeValue = float(glfwGetTime());
+		camX = sin(timeValue) * radius;
+		camZ = cos(timeValue) * radius;
+		rot_view = glm::lookAt(glm::vec3(camX, 0, camZ), cameraTarget, up);
+
+		shader.set("view", rot_view);
+		
 		// input (obviously)
 		process_input(window);
 
