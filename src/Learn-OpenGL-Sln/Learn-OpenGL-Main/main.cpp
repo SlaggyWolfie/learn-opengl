@@ -11,28 +11,21 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Shader.hpp"
+#include "Camera.hpp"
 
 const int INIT_ERROR = -1;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
 const unsigned int INITIAL_SCREEN_HEIGHT = 600;
+
+const float INITIAL_FOV = 45;
 
 // green-ish color
 const std::array<float, 4> _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
 std::array<float, 4> _clearColor = _defaultClearColor;
 
 float mix_ratio = 0.2f;
-
-glm::vec3 cameraPosition(0, 0, 3);
-glm::vec3 cameraFront(0, 0, -1);
-glm::vec3 cameraUp(0, 1, 0);
-
-float yaw = -90; // y
-float pitch = 0; // x
-float roll = 0; // z, also not used
-
-const float INITIAL_FOV = 45;
-float fov = INITIAL_FOV;
-float& zoom = fov;
+float deltaTime = 0;
+float lastFrame = 0;
 
 glm::vec2 lastMousePosition = glm::vec2
 (
@@ -40,13 +33,12 @@ glm::vec2 lastMousePosition = glm::vec2
 	float(INITIAL_SCREEN_HEIGHT) / 2
 );
 
-float deltaTime = 0;
-float lastFrame = 0;
+Camera* camera = nullptr;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void process_input(GLFWwindow* window);
-void mouse_callback(GLFWwindow* window, double x, double y);
-void scroll_callback(GLFWwindow* window, double, double yOffset);
+void mouse_callback(GLFWwindow*, double x, double y);
+void scroll_callback(GLFWwindow*, double, double yOffset);
 
 int main()
 {
@@ -259,14 +251,16 @@ int main()
 	const glm::mat4 identity(1);
 	glm::mat4 view = identity;
 	glm::mat4 projection = identity;
-	
+
 	glEnable(GL_DEPTH_TEST);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPos(window, lastMousePosition.x, lastMousePosition.y);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-	
+
+	camera = new Camera;
+
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
@@ -276,9 +270,9 @@ int main()
 
 		process_input(window);
 
-		view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+		view = camera->viewMatrix();
 		projection = glm::perspective(
-			glm::radians(fov), float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
+			glm::radians(camera->fov), float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
 		shader.set("view", view);
 		shader.set("projection", projection);
@@ -336,6 +330,8 @@ int main()
 	glDeleteBuffers(1, &vbo);
 	//glDeleteBuffers(1, &ebo);
 
+	delete camera;
+
 	glfwTerminate();
 	return 0;
 }
@@ -368,19 +364,16 @@ void process_input(GLFWwindow* window)
 		mix_ratio = std::max(mix_ratio, 0.0f);
 	}
 
-	const float cameraSpeed = 2.5f * deltaTime;
+	unsigned int direction = 0;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) direction |= Camera::movement::FORWARD;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) direction |= Camera::movement::BACKWARD;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) direction |= Camera::movement::LEFT;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) direction |= Camera::movement::RIGHT;
 
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPosition += cameraSpeed * cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPosition -= cameraSpeed * cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	camera->processMovement(Camera::movement(direction), deltaTime);
 }
 
-void mouse_callback(GLFWwindow* window, const double x, const double y)
+void mouse_callback(GLFWwindow*, const double x, const double y)
 {
 	const glm::vec2 mousePosition(x, y);
 	glm::vec2 offset = mousePosition - lastMousePosition;
@@ -389,26 +382,10 @@ void mouse_callback(GLFWwindow* window, const double x, const double y)
 	// > reversed since y-coordinates range from bottom to top
 	offset.y *= -1;
 
-	const float sensitivity = 0.01f;
-	offset *= sensitivity;
-
-	yaw += offset.x;
-	pitch += offset.y;
-
-	// Clamping to prevent large numbers and Gimbal lock
-	yaw = glm::mod(yaw, 360.0f);
-	pitch = glm::clamp(pitch, -89.0f, 89.0f);
-
-	// Manipulate camera direction
-	glm::vec3 cameraDirection;
-	cameraDirection.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraDirection.y = sin(glm::radians(pitch));
-	cameraDirection.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(cameraDirection);
+	camera->processOrientation(offset);
 }
 
-void scroll_callback(GLFWwindow* window, const double, const double yOffset)
+void scroll_callback(GLFWwindow*, const double, const double yOffset)
 {
-	zoom -= float(yOffset);
-	zoom = glm::clamp(zoom, 1.0f, INITIAL_FOV);
+	camera->processZoom(yOffset);
 }

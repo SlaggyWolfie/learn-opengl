@@ -53,7 +53,7 @@ void Shader::read(const std::string& vertexPath, const std::string& fragmentPath
 	}
 	catch (std::ifstream::failure& exception)
 	{
-		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_FOUND_OR_READ" << std::endl;
+		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_FOUND_OR_READ\n" << exception.what() << std::endl;
 		// TODO fix shader failure not stopping the rest of the process
 		//return;
 	}
