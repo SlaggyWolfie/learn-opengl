@@ -13,6 +13,9 @@
 #include "Shader.hpp"
 #include "Camera.hpp"
 
+using color = glm::vec3;
+using uint = unsigned int;
+
 const int INIT_ERROR = -1;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
 const unsigned int INITIAL_SCREEN_HEIGHT = 600;
@@ -145,7 +148,7 @@ int main()
 	stbi_image_free(data);
 
 	// Start initializing vertices, vaos, vbos, and such
-	const Shader shader("shaders/shader.vert", "shaders/shader.frag");
+	const Shader defaultShader("shaders/default.vert", "shaders/default.frag");
 
 	// Basic rendering setup
 
@@ -244,9 +247,9 @@ int main()
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//---------------------------------------------------------------------------//
 
-	shader.use();
-	shader.set("textureSampler1", 0);
-	shader.set("textureSampler2", 1);
+	defaultShader.use();
+	defaultShader.set("textureSampler1", 0);
+	defaultShader.set("textureSampler2", 1);
 
 	const glm::mat4 identity(1);
 	glm::mat4 view = identity;
@@ -259,8 +262,32 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	camera = new Camera;
+	camera = new Camera(glm::vec3(0, 0, -3));
 
+	const color lightColor(1);
+	const color objectColor(1, 0.5f, 0.31f);
+
+	uint vaoLight = 0;
+	glGenVertexArrays(1, &vaoLight);
+	glBindVertexArray(vaoLight);
+	// > we only need to bind the VBO, the container's buffer object already contains the data
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	// > only position data for the lamp
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+
+	const glm::vec3 lightPosition(1.2f, 1, 2);
+	const glm::vec3 lightScale(0.2f);
+
+	glm::mat4 lightModel = identity;
+	lightModel = glm::translate(lightModel, lightPosition);
+	lightModel = glm::scale(lightModel, lightScale);
+
+	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
+	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
+	
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
@@ -274,8 +301,8 @@ int main()
 		projection = glm::perspective(
 			glm::radians(camera->fov), float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
-		shader.set("view", view);
-		shader.set("projection", projection);
+		defaultShader.set("view", view);
+		defaultShader.set("projection", projection);
 
 		// rendering
 		glClearColor
@@ -288,34 +315,36 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texID_container);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, texID_container);
 
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texID_awesomeface);
+		//glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, texID_awesomeface);
 
-		shader.use();
-		shader.set("mixRatio", mix_ratio);
+		//defaultShader.use();
+		//defaultShader.set("mixRatio", mix_ratio);
 
+		litShader.use();
+
+		litShader.set("model", identity);
+		litShader.set("view", view);
+		litShader.set("projection", projection);
+		
+		litShader.set("objectColor", objectColor);
+		litShader.set("lightColor", lightColor);
+		
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
 		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		for (unsigned int i = 0; i < 10; i++)
-		{
-			float angle = glm::radians(float(20 * i));
-			if (!(i % 3)) angle += float(glfwGetTime());
+		lightShader.use();
+		lightShader.set("model", lightModel);
+		lightShader.set("view", view);
+		lightShader.set("projection", projection);
 
-			glm::mat4 model = identity;
-			model = glm::translate(model, cubePositions[i]);
-			model = glm::rotate(model, angle, glm::vec3(1, 0.3f, 0.5f));
-
-			shader.set("model", model);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(vaoLight);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// > no need to unbind it every time 
 		//glBindVertexArray(0);
@@ -326,6 +355,7 @@ int main()
 	}
 
 	// Clean-up!
+	glDeleteVertexArrays(1, &vaoLight);
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
 	//glDeleteBuffers(1, &ebo);
@@ -388,5 +418,5 @@ void mouse_callback(GLFWwindow*, const double x, const double y)
 
 void scroll_callback(GLFWwindow*, const double, const double yOffset)
 {
-	camera->processZoom(yOffset);
+	camera->processZoom(float(yOffset));
 }
