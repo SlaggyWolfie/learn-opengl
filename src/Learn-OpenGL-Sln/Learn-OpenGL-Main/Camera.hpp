@@ -19,8 +19,9 @@ private:
 	static const float DEFAULT_SENSITIVITY;
 	static const float DEFAULT_FOV;
 
-	void updateDirections();
-	static glm::mat4 bootlegLookAt(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up);
+	void updateFromYawPitch();
+	void updateNonForwardDirections();
+	static glm::mat4 bootlegGetLookAtMatrix(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up);
 	
 public:
 	enum  movement { FORWARD = 1, BACKWARD = 2, LEFT = 4, RIGHT = 8 };
@@ -38,7 +39,8 @@ public:
 	Camera(glm::vec3 position = ZERO, glm::vec3 up = WORLD_UP, float yaw = DEFAULT_YAW, float pitch = DEFAULT_PITCH);
 
 	glm::mat4 viewMatrix() const;
-
+	void lookAt(const glm::vec3& target);
+	
 	void processMovement(movement directions, float deltaTime = 1.0f / 60.0f, GLboolean stuck = false);
 	void processOrientation(glm::vec2 offset, GLboolean constrain = true);
 	void processZoom(float offset);

@@ -17,13 +17,25 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 	: forward(WORLD_FORWARD), up(up), right(0), position(position), yaw(yaw), pitch(pitch),
 	roll(0), fov(DEFAULT_FOV), movementSpeed(DEFAULT_SPEED), orientationSensitivity(DEFAULT_SENSITIVITY)
 {
-	updateDirections();
+	updateFromYawPitch();
 }
 
 glm::mat4 Camera::viewMatrix() const
 {
 	//return glm::lookAt(position, position + forward, up);
-	return bootlegLookAt(position, position + forward, up);
+	return bootlegGetLookAtMatrix(position, position + forward, up);
+}
+
+void Camera::lookAt(const glm::vec3& target)
+{
+	forward = glm::normalize(target - position);
+	updateNonForwardDirections();
+
+	const float pitch_r = asin(forward.y);
+	const float yaw_r = -acos(forward.x / cos(pitch_r));
+
+	pitch = glm::degrees(pitch_r);
+	yaw = glm::degrees(yaw_r);
 }
 
 void Camera::processMovement(const movement directions, const float deltaTime, GLboolean stuck)
@@ -52,7 +64,7 @@ void Camera::processOrientation(glm::vec2 offset, GLboolean constrain)
 		pitch = glm::clamp(pitch, -89.0f, 89.0f);
 	}
 
-	updateDirections();
+	updateFromYawPitch();
 }
 
 void Camera::processZoom(const float offset)
@@ -61,22 +73,26 @@ void Camera::processZoom(const float offset)
 	zoom = glm::clamp(zoom, 1.0f, DEFAULT_FOV);
 }
 
-void Camera::updateDirections()
+void Camera::updateFromYawPitch()
 {
 	// Manipulate camera direction
-	glm::vec3 direction;
+	glm::vec3 direction(0);
 	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 	direction.y = sin(glm::radians(pitch));
 	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
 	forward = glm::normalize(direction);
+	updateNonForwardDirections();
+}
 
+void Camera::updateNonForwardDirections()
+{
 	// > normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 	right = glm::normalize(glm::cross(forward, WORLD_UP));
 	up = glm::normalize(glm::cross(right, forward));
 }
 
-glm::mat4 Camera::bootlegLookAt(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up)
+glm::mat4 Camera::bootlegGetLookAtMatrix(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up)
 {
 	const glm::vec3 l_forward = glm::normalize(eye - target);
 	const glm::vec3 l_right = glm::normalize(glm::cross(up, l_forward));
@@ -91,7 +107,7 @@ glm::mat4 Camera::bootlegLookAt(const glm::vec3& eye, const glm::vec3& target, c
 		glm::vec4(l_forward, 0),
 		glm::vec4(0, 0, 0, 1)
 	);
-	
+
 	directionMatrix = glm::transpose(directionMatrix);
 
 	return directionMatrix * translationMatrix;
