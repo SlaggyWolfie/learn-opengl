@@ -22,10 +22,11 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 
 glm::mat4 Camera::viewMatrix() const
 {
-	return glm::lookAt(position, position + forward, up);
+	//return glm::lookAt(position, position + forward, up);
+	return bootlegLookAt(position, position + forward, up);
 }
 
-void Camera::processMovement(const movement directions, const float deltaTime)
+void Camera::processMovement(const movement directions, const float deltaTime, GLboolean stuck)
 {
 	glm::vec3 direction(0);
 	if (directions & movement::FORWARD)  direction += forward;
@@ -34,6 +35,7 @@ void Camera::processMovement(const movement directions, const float deltaTime)
 	if (directions & movement::RIGHT)    direction += right;
 
 	position += direction * (movementSpeed * deltaTime);
+	if (stuck) position.y = 0;
 }
 
 void Camera::processOrientation(glm::vec2 offset, GLboolean constrain)
@@ -72,4 +74,25 @@ void Camera::updateDirections()
 	// > normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 	right = glm::normalize(glm::cross(forward, WORLD_UP));
 	up = glm::normalize(glm::cross(right, forward));
+}
+
+glm::mat4 Camera::bootlegLookAt(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up)
+{
+	const glm::vec3 l_forward = glm::normalize(eye - target);
+	const glm::vec3 l_right = glm::normalize(glm::cross(up, l_forward));
+	const glm::vec3 l_up = glm::normalize(glm::cross(l_forward, l_right));
+
+	const glm::mat4 translationMatrix = glm::translate(glm::mat4(1), -eye);
+
+	glm::mat4 directionMatrix
+	(
+		glm::vec4(l_right, 0),
+		glm::vec4(l_up, 0),
+		glm::vec4(l_forward, 0),
+		glm::vec4(0, 0, 0, 1)
+	);
+	
+	directionMatrix = glm::transpose(directionMatrix);
+
+	return directionMatrix * translationMatrix;
 }

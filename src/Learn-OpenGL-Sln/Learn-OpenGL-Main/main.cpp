@@ -370,7 +370,8 @@ void process_input(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) direction |= Camera::movement::LEFT;
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) direction |= Camera::movement::RIGHT;
 
-	camera->processMovement(Camera::movement(direction), deltaTime);
+	if (direction)
+		camera->processMovement(Camera::movement(direction), deltaTime);
 }
 
 void mouse_callback(GLFWwindow*, const double x, const double y)

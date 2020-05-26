@@ -20,7 +20,8 @@ private:
 	static const float DEFAULT_FOV;
 
 	void updateDirections();
-
+	static glm::mat4 bootlegLookAt(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up);
+	
 public:
 	enum  movement { FORWARD = 1, BACKWARD = 2, LEFT = 4, RIGHT = 8 };
 
@@ -38,7 +39,7 @@ public:
 
 	glm::mat4 viewMatrix() const;
 
-	void processMovement(movement directions, float deltaTime = 1.0f / 60.0f);
+	void processMovement(movement directions, float deltaTime = 1.0f / 60.0f, GLboolean stuck = false);
 	void processOrientation(glm::vec2 offset, GLboolean constrain = true);
 	void processZoom(float offset);
 };
