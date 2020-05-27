@@ -52,5 +52,11 @@
     <None Include="shaders\light.vert" />
     <None Include="shaders\lit.vert" />
     <None Include="shaders\lit.frag" />
+    <None Include="shaders\litPhongViewSpace.frag" />
+    <None Include="shaders\litPhongViewSpace.vert" />
+    <None Include="shaders\litGouraud.frag" />
+    <None Include="shaders\litGouraud.vert" />
+    <None Include="shaders\litPhong.frag" />
+    <None Include="shaders\litPhong.vert" />
   </ItemGroup>
 </Project>
