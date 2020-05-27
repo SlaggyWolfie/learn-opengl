@@ -272,12 +272,16 @@ int main()
 
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
+	const Shader litViewShader("shaders/litPhongViewSpace.vert", "shaders/litPhongViewSpace.frag");
+	const Shader litGouraud("shaders/litGouraud.vert", "shaders/litGouraud.frag");
 
 	litShader.use();
-
 	litShader.set("objectColor", objectColor);
 	litShader.set("lightColor", lightColor);
-	litShader.set("lightPosition", lightPosition);
+
+	litViewShader.use();
+	litViewShader.set("objectColor", objectColor);
+	litViewShader.set("lightColor", lightColor);
 
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
@@ -286,17 +290,14 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		process_input(window);
-
 		view = camera->viewMatrix();
-		projection = glm::perspective(
-			glm::radians(camera->fov), float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
+		projection = glm::perspective(glm::radians(camera->fov),
+			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
 		lightPosition.x = 1 + sin(currentFrame) * 2;
 		lightPosition.y = sin(currentFrame / 2);
-		
-		//defaultShader.set("view", view);
-		//defaultShader.set("projection", projection);
+				
+		process_input(window);
 
 		// rendering
 		glClearColor
@@ -323,10 +324,8 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		litShader.use();
-
-
+		
 		glm::mat4 litModel = identity;
-		//litModel = glm::rotate(litModel, glm::radians(currentFrame * 25), glm::vec3(0, 1, 0));
 		litShader.set("model", litModel);
 		litShader.set("view", view);
 		litShader.set("projection", projection);
@@ -334,6 +333,12 @@ int main()
 		litShader.set("normalMatrix", glm::mat3(glm::transpose(glm::inverse(identity))));
 		litShader.set("viewerPosition", camera->position);
 		litShader.set("lightPosition", lightPosition);
+
+		litViewShader.use();
+		litViewShader.set("model", litModel);
+		litViewShader.set("view", view);
+		litViewShader.set("projection", projection);
+		litViewShader.set("lightPosition", lightPosition);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized

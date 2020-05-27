@@ -5,17 +5,19 @@ layout (location = 1) in vec3 attr_normal;
 
 out vec3 fragmentPosition;
 out vec3 fragmentNormal;
+out vec3 fragmentLightPosition;
+
+uniform vec3 lightPosition;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform mat4 mvp;
-uniform mat3 normalMatrix;
 
 void main()
 {
-    gl_Position = mvp * vec4(attr_position, 1);
+    gl_Position = projection * view * model * vec4(attr_position, 1);
     
-    fragmentPosition = vec3(model * vec4(attr_position, 1.0));
-    fragmentNormal = normalMatrix * attr_normal;
+    fragmentPosition = vec3(view * model * vec4(attr_position, 1.0));
+    fragmentNormal = mat3(transpose(inverse(view * model))) * attr_normal;
+    fragmentLightPosition = vec3(view * vec4(lightPosition, 1));
 }

@@ -29,7 +29,7 @@ void main()
 	float specularStrength = 0.5;
 	int shininess = 256;
 
-	vec3 nViewerDirection = normalize(viewerPosition - lightPosition);
+	vec3 nViewerDirection = normalize(viewerPosition - fragmentPosition);
 	vec3 reflectionDirection = normalize(reflect(-nLightDirection, nNormal));
 
 	float specular = pow(max(dot(nViewerDirection, reflectionDirection), 0.0), shininess);
