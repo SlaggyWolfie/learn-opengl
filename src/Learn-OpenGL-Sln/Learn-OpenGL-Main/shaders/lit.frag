@@ -30,7 +30,7 @@ void main()
 	int shininess = 256;
 
 	vec3 nViewerDirection = normalize(viewerPosition - lightPosition);
-	vec3 reflectionDirection = reflect(-nLightDirection, nNormal);
+	vec3 reflectionDirection = normalize(reflect(-nLightDirection, nNormal));
 
 	float specular = pow(max(dot(nViewerDirection, reflectionDirection), 0.0), shininess);
 	vec3 specularColor = lightColor * specular * specularStrength;
@@ -38,4 +38,5 @@ void main()
 	vec3 result = (ambientColor + diffuseColor + specularColor) * objectColor;
 
 	fragmentColor = vec4(result, 1.0);
+//	fragmentColor = vec4(fragmentNormal, 1.0);
 } 

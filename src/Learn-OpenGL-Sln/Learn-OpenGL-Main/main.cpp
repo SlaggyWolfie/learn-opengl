@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include "Shader.hpp"
 #include "Camera.hpp"
@@ -266,22 +267,18 @@ int main()
 
 	glBindVertexArray(0);
 
-	const glm::vec3 lightPosition(1.2f, 1, 2);
+	glm::vec3 lightPosition(1.2f, 1, 2);
 	const glm::vec3 lightScale(0.2f);
-
-	glm::mat4 lightModel = identity;
-	lightModel = glm::translate(lightModel, lightPosition);
-	lightModel = glm::scale(lightModel, lightScale);
 
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
-	
+
 	litShader.use();
 
 	litShader.set("objectColor", objectColor);
 	litShader.set("lightColor", lightColor);
 	litShader.set("lightPosition", lightPosition);
-	
+
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
@@ -295,8 +292,11 @@ int main()
 		projection = glm::perspective(
 			glm::radians(camera->fov), float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
-		defaultShader.set("view", view);
-		defaultShader.set("projection", projection);
+		lightPosition.x = 1 + sin(currentFrame) * 2;
+		lightPosition.y = sin(currentFrame / 2);
+		
+		//defaultShader.set("view", view);
+		//defaultShader.set("projection", projection);
 
 		// rendering
 		glClearColor
@@ -309,27 +309,37 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		litShader.use();
-
-		litShader.set("model", identity);
-		litShader.set("view", view);
-		litShader.set("projection", projection);
-		litShader.set("mvp", projection * view * identity);
-		litShader.set("normalMatrix", glm::mat3(glm::transpose(glm::inverse(identity))));
-		litShader.set("viewerPosition", camera->position);
-		
-		// > seeing as we only have a single VAO there's no need to bind it every time,
-		// > but we'll do so to keep things a bit more organized
-		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
 		lightShader.use();
+
+		glm::mat4 lightModel = identity;
+		lightModel = glm::translate(lightModel, lightPosition);
+		lightModel = glm::scale(lightModel, lightScale);
+
 		lightShader.set("model", lightModel);
 		lightShader.set("view", view);
 		lightShader.set("projection", projection);
 
 		glBindVertexArray(vaoLight);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		litShader.use();
+
+
+		glm::mat4 litModel = identity;
+		//litModel = glm::rotate(litModel, glm::radians(currentFrame * 25), glm::vec3(0, 1, 0));
+		litShader.set("model", litModel);
+		litShader.set("view", view);
+		litShader.set("projection", projection);
+		litShader.set("mvp", projection * view * litModel);
+		litShader.set("normalMatrix", glm::mat3(glm::transpose(glm::inverse(identity))));
+		litShader.set("viewerPosition", camera->position);
+		litShader.set("lightPosition", lightPosition);
+
+		// > seeing as we only have a single VAO there's no need to bind it every time,
+		// > but we'll do so to keep things a bit more organized
+		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
 		// > no need to unbind it every time 
 		//glBindVertexArray(0);
@@ -396,7 +406,7 @@ void mouse_callback(GLFWwindow*, const double x, const double y)
 		lastMousePosition = glm::vec2(x, y);
 		firstMouse = false;
 	}
-	
+
 	const glm::vec2 mousePosition(x, y);
 	glm::vec2 offset = mousePosition - lastMousePosition;
 	lastMousePosition = mousePosition;
