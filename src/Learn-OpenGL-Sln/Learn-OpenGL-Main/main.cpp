@@ -303,19 +303,6 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		lightShader.use();
-
-		glm::mat4 lightModel = identity;
-		lightModel = glm::translate(lightModel, lightPosition);
-		lightModel = glm::scale(lightModel, lightScale);
-
-		lightShader.set("model", lightModel);
-		lightShader.set("view", view);
-		lightShader.set("projection", projection);
-
-		glBindVertexArray(vaoLight);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
 		litShader.use();
 
 		glm::mat4 litModel = identity;
@@ -351,6 +338,18 @@ int main()
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
 		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		lightShader.use();
+
+		glm::mat4 lightModel = identity;
+		lightModel = glm::translate(lightModel, lightPosition);
+		lightModel = glm::scale(lightModel, lightScale);
+
+		lightShader.set("mvp", projection * view * lightModel);
+		lightShader.set("lightColor", lightColor);
+
+		glBindVertexArray(vaoLight);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
