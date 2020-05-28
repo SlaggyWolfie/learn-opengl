@@ -33,6 +33,7 @@ void main()
 	// texture samples
 	vec3 diffuseSample = vec3(texture(material.diffuse, textureCoordinate));
 	vec3 specularSample = vec3(texture(material.specular, textureCoordinate));
+	specularSample = vec3(1) - specularSample;
 
 	// ambient
 	// first parameter is intensity

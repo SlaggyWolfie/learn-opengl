@@ -249,9 +249,9 @@ int main()
 		litShader.set("material.shininess", 32.0f);
 
 		color lightColor(1);
-		//lightColor.r = sin(currentFrame * 2.0f);
-		//lightColor.g = sin(currentFrame * 0.7f);
-		//lightColor.b = sin(currentFrame * 1.3f);
+		lightColor.r = sin(currentFrame * 2.0f);
+		lightColor.g = sin(currentFrame * 0.7f);
+		lightColor.b = sin(currentFrame * 1.3f);
 
 		litShader.set("light.position", lightPosition);
 		litShader.set("light.ambientColor", lightColor * glm::vec3(0.2f));
