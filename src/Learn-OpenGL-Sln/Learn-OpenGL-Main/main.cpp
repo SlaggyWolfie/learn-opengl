@@ -457,6 +457,7 @@ void scroll_callback(GLFWwindow*, const double, const double yOffset)
 	camera->processZoom(float(yOffset));
 }
 
+// The following code is from: https://github.com/graphitemaster/normals_revisited
 float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2)
 {
 	return
