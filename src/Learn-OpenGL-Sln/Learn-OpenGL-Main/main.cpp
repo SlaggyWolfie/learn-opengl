@@ -283,6 +283,10 @@ int main()
 	litViewShader.set("objectColor", objectColor);
 	litViewShader.set("lightColor", lightColor);
 
+	litGouraud.use();
+	litGouraud.set("objectColor", objectColor);
+	litGouraud.set("lightColor", lightColor);
+
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
@@ -296,7 +300,7 @@ int main()
 
 		lightPosition.x = 1 + sin(currentFrame) * 2;
 		lightPosition.y = sin(currentFrame / 2);
-				
+
 		process_input(window);
 
 		// rendering
@@ -324,7 +328,7 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		litShader.use();
-		
+
 		glm::mat4 litModel = identity;
 		litShader.set("model", litModel);
 		litShader.set("view", view);
@@ -339,6 +343,13 @@ int main()
 		litViewShader.set("view", view);
 		litViewShader.set("projection", projection);
 		litViewShader.set("lightPosition", lightPosition);
+
+		litGouraud.use();
+		litGouraud.set("model", litModel);
+		litGouraud.set("view", view);
+		litGouraud.set("projection", projection);
+		litGouraud.set("viewerPosition", camera->position);
+		litGouraud.set("lightPosition", lightPosition);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
