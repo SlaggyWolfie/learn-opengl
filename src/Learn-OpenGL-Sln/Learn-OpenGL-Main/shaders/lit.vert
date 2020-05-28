@@ -1,8 +1,10 @@
 #version 330 core
 
 layout (location = 0) in vec3 attr_position;
-layout (location = 1) in vec3 attr_normal;  
+layout (location = 1) in vec3 attr_normal;
+layout (location = 2) in vec2 attr_uv;
 
+out vec2 textureCoordinate;
 out vec3 fragmentPosition;
 out vec3 fragmentNormal;
 
@@ -18,4 +20,5 @@ void main()
     
     fragmentPosition = vec3(model * vec4(attr_position, 1.0));
     fragmentNormal = normalMatrix * attr_normal;
+    textureCoordinate = attr_uv;
 }
