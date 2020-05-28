@@ -75,12 +75,8 @@ int main()
 
 	glfwMakeContextCurrent(window);
 
-	// Alternative suggestions by Resharper
-	//if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
-	//if (!gladLoadGLLoader(GLADloadproc(glfwGetProcAddress)))
-
 	// Initialize GLAD — btw, black magic with this case as noted above
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	if (!gladLoadGLLoader(GLADloadproc(glfwGetProcAddress)))
 	{
 		std::cout << "Failed to initialize GLAD." << std::endl;
 		return INIT_ERROR;
@@ -276,20 +272,10 @@ int main()
 
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
-	//const Shader litViewShader("shaders/litPhongViewSpace.vert", "shaders/litPhongViewSpace.frag");
-	//const Shader litGouraud("shaders/litGouraud.vert", "shaders/litGouraud.frag");
 
 	litShader.use();
 	litShader.set("objectColor", objectColor);
 	litShader.set("lightColor", lightColor);
-
-	//litViewShader.use();
-	//litViewShader.set("objectColor", objectColor);
-	//litViewShader.set("lightColor", lightColor);
-
-	//litGouraud.use();
-	//litGouraud.set("objectColor", objectColor);
-	//litGouraud.set("lightColor", lightColor);
 
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
@@ -342,33 +328,10 @@ int main()
 		litShader.set("viewerPosition", camera->position);
 		litShader.set("lightPosition", lightPosition);
 
-		//std::cout << "Model Matrix\n" << glm::to_string(litModel) << '\n' << std::endl;
-
 		glm::mat4 normalMatrix(0);
-		float cofNormal[16];
-		
-		matrix_cofactor(static_cast<float*>(glm::value_ptr(litModel)), cofNormal);
-		
-		normalMatrix = glm::make_mat4x4(cofNormal);
-		//std::cout << "Resulting Normal (Cofactor) Matrix\n" << glm::to_string(normalMatrix) << '\n' << std::endl;
-
-		//normalMatrix = glm::transpose(glm::inverse(identity));
-		//std::cout << "Resulting Normal (Inverse-Transpose) Matrix\n" << glm::to_string(normalMatrix) << '\n' << std::endl;
+		matrix_cofactor(static_cast<float*>(glm::value_ptr(litModel)), static_cast<float*>(glm::value_ptr(normalMatrix)));
 
 		litShader.set("normalMatrix", glm::mat3(normalMatrix));
-
-		//litViewShader.use();
-		//litViewShader.set("model", litModel);
-		//litViewShader.set("view", view);
-		//litViewShader.set("projection", projection);
-		//litViewShader.set("lightPosition", lightPosition);
-
-		//litGouraud.use();
-		//litGouraud.set("model", litModel);
-		//litGouraud.set("view", view);
-		//litGouraud.set("projection", projection);
-		//litGouraud.set("viewerPosition", camera->position);
-		//litGouraud.set("lightPosition", lightPosition);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
@@ -468,20 +431,20 @@ float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, in
 
 void matrix_cofactor(const float src[16], float dst[16])
 {
-	dst[0] =   matrix_minor(src, 1, 2, 3, 1, 2, 3);
-	dst[1] =  -matrix_minor(src, 1, 2, 3, 0, 2, 3);
-	dst[2] =   matrix_minor(src, 1, 2, 3, 0, 1, 3);
-	dst[3] =  -matrix_minor(src, 1, 2, 3, 0, 1, 2);
-	dst[4] =  -matrix_minor(src, 0, 2, 3, 1, 2, 3);
-	dst[5] =   matrix_minor(src, 0, 2, 3, 0, 2, 3);
-	dst[6] =  -matrix_minor(src, 0, 2, 3, 0, 1, 3);
-	dst[7] =   matrix_minor(src, 0, 2, 3, 0, 1, 2);
-	dst[8] =   matrix_minor(src, 0, 1, 3, 1, 2, 3);
-	dst[9] =  -matrix_minor(src, 0, 1, 3, 0, 2, 3);
-	dst[10] =  matrix_minor(src, 0, 1, 3, 0, 1, 3);
+	dst[0] = matrix_minor(src, 1, 2, 3, 1, 2, 3);
+	dst[1] = -matrix_minor(src, 1, 2, 3, 0, 2, 3);
+	dst[2] = matrix_minor(src, 1, 2, 3, 0, 1, 3);
+	dst[3] = -matrix_minor(src, 1, 2, 3, 0, 1, 2);
+	dst[4] = -matrix_minor(src, 0, 2, 3, 1, 2, 3);
+	dst[5] = matrix_minor(src, 0, 2, 3, 0, 2, 3);
+	dst[6] = -matrix_minor(src, 0, 2, 3, 0, 1, 3);
+	dst[7] = matrix_minor(src, 0, 2, 3, 0, 1, 2);
+	dst[8] = matrix_minor(src, 0, 1, 3, 1, 2, 3);
+	dst[9] = -matrix_minor(src, 0, 1, 3, 0, 2, 3);
+	dst[10] = matrix_minor(src, 0, 1, 3, 0, 1, 3);
 	dst[11] = -matrix_minor(src, 0, 1, 3, 0, 1, 2);
 	dst[12] = -matrix_minor(src, 0, 1, 2, 1, 2, 3);
-	dst[13] =  matrix_minor(src, 0, 1, 2, 0, 2, 3);
+	dst[13] = matrix_minor(src, 0, 1, 2, 0, 2, 3);
 	dst[14] = -matrix_minor(src, 0, 1, 2, 0, 1, 3);
-	dst[15] =  matrix_minor(src, 0, 1, 2, 0, 1, 2);
+	dst[15] = matrix_minor(src, 0, 1, 2, 0, 1, 2);
 }
