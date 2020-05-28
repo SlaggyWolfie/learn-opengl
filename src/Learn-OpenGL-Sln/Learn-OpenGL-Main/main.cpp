@@ -100,7 +100,8 @@ int main()
 	//----- end of window setup -----//
 
 	const unsigned int texID_diffuseMap = loadTexture("assets/container2.png");
-	const unsigned int texID_specularMap = loadTexture("assets/container2_specular.png");
+	//const unsigned int texID_specularMap = loadTexture("assets/container2_specular.png");
+	const unsigned int texID_specularMap = loadTexture("assets/lighting_maps_specular_color.png");
 
 	float vertices[] =
 	{
@@ -249,9 +250,9 @@ int main()
 		litShader.set("material.shininess", 32.0f);
 
 		color lightColor(1);
-		lightColor.r = sin(currentFrame * 2.0f);
-		lightColor.g = sin(currentFrame * 0.7f);
-		lightColor.b = sin(currentFrame * 1.3f);
+		//lightColor.r = sin(currentFrame * 2.0f);
+		//lightColor.g = sin(currentFrame * 0.7f);
+		//lightColor.b = sin(currentFrame * 1.3f);
 
 		litShader.set("light.position", lightPosition);
 		litShader.set("light.ambientColor", lightColor * glm::vec3(0.2f));
