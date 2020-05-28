@@ -14,6 +14,7 @@
 #include "Shader.hpp"
 #include "Camera.hpp"
 #include <algorithm>
+#include "BasicMaterialLibrary.hpp"
 
 using color = glm::vec3;
 using color4 = glm::vec4;
@@ -49,6 +50,7 @@ void scroll_callback(GLFWwindow*, double, double yOffset);
 
 float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2);
 void matrix_cofactor(const float src[16], float dst[16]);
+void parse_basic_material(const Shader& shader, const BasicMaterialLibrary::BasicMaterial& material);
 
 int main()
 {
@@ -276,6 +278,8 @@ int main()
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
 
+	BasicMaterialLibrary mats;
+
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
@@ -313,15 +317,16 @@ int main()
 
 		litShader.set("viewerPosition", camera->position);
 
-		litShader.set("material.ambientColor", objectColor);
-		litShader.set("material.diffuseColor", objectColor);
-		litShader.set("material.specularColor", color(0.5f));
-		litShader.set("material.shininess", 32.0f);
+		parse_basic_material(litShader, mats["cyan plastic"]);
+		//litShader.set("material.ambientColor", objectColor);
+		//litShader.set("material.diffuseColor", objectColor);
+		//litShader.set("material.specularColor", color(0.5f));
+		//litShader.set("material.shininess", 32.0f);
 
-		color lightColor;
-		lightColor.r = sin(currentFrame * 2.0f);
-		lightColor.g = sin(currentFrame * 0.7f);
-		lightColor.b = sin(currentFrame * 1.3f);
+		color lightColor(1);
+		//lightColor.r = sin(currentFrame * 2.0f);
+		//lightColor.g = sin(currentFrame * 0.7f);
+		//lightColor.b = sin(currentFrame * 1.3f);
 
 		litShader.set("light.position", lightPosition);
 		litShader.set("light.ambientColor", lightColor * glm::vec3(0.2f));
@@ -461,4 +466,13 @@ void matrix_cofactor(const float src[16], float dst[16])
 	dst[13] = matrix_minor(src, 0, 1, 2, 0, 2, 3);
 	dst[14] = -matrix_minor(src, 0, 1, 2, 0, 1, 3);
 	dst[15] = matrix_minor(src, 0, 1, 2, 0, 1, 2);
+}
+
+void parse_basic_material(const Shader& shader, const BasicMaterialLibrary::BasicMaterial& material)
+{
+	shader.use();
+	shader.set("material.ambientColor", material.ambient);
+	shader.set("material.diffuseColor", material.diffuse);
+	shader.set("material.specularColor", material.specular);
+	shader.set("material.shininess", material.shine);
 }
