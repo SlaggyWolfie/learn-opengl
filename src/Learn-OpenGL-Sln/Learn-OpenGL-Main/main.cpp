@@ -1,5 +1,4 @@
 #include <iostream>
-#include <array>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -14,8 +13,10 @@
 
 #include "Shader.hpp"
 #include "Camera.hpp"
+#include <algorithm>
 
 using color = glm::vec3;
+using color4 = glm::vec4;
 using uint = unsigned int;
 
 const int INIT_ERROR = -1;
@@ -25,8 +26,8 @@ const unsigned int INITIAL_SCREEN_HEIGHT = 600;
 const float INITIAL_FOV = 45;
 
 // green-ish color
-const std::array<float, 4> _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
-std::array<float, 4> _clearColor = _defaultClearColor;
+const color4 _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
+color4 _clearColor = _defaultClearColor;
 
 float mix_ratio = 0.2f;
 float deltaTime = 0;
@@ -250,10 +251,12 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	camera = new Camera(glm::vec3(1, 1, 5));
-	camera->lookAt(glm::vec3(0));
+	//camera = new Camera(glm::vec3(1, 1, 5));
+	//camera->lookAt(glm::vec3(0));
 
-	const color lightColor(1);
+	camera = new Camera(glm::vec3(-2, -0.5f, 2.5f));
+	camera->lookAt(glm::vec3(0.5f, 0.5f, 1));
+
 	const color objectColor(1, 0.5f, 0.31f);
 
 	uint vaoLight = 0;
@@ -273,10 +276,6 @@ int main()
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
 
-	litShader.use();
-	litShader.set("objectColor", objectColor);
-	litShader.set("lightColor", lightColor);
-
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
@@ -288,8 +287,8 @@ int main()
 		projection = glm::perspective(glm::radians(camera->fov),
 			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
-		lightPosition.x = 1 + sin(currentFrame) * 2;
-		lightPosition.y = sin(currentFrame / 2);
+		//lightPosition.x = 1 + sin(currentFrame) * 2;
+		//lightPosition.y = sin(currentFrame / 2);
 
 		process_input(window);
 
@@ -326,10 +325,26 @@ int main()
 		litShader.set("mvp", projection * view * litModel);
 
 		litShader.set("viewerPosition", camera->position);
-		litShader.set("lightPosition", lightPosition);
+
+		litShader.set("material.ambientColor", objectColor);
+		litShader.set("material.diffuseColor", objectColor);
+		litShader.set("material.specularColor", color(0.5f));
+		litShader.set("material.shininess", 32.0f);
+
+		color lightColor;
+		lightColor.r = sin(currentFrame * 2.0f);
+		lightColor.g = sin(currentFrame * 0.7f);
+		lightColor.b = sin(currentFrame * 1.3f);
+
+		litShader.set("light.position", lightPosition);
+		litShader.set("light.ambientColor", lightColor * glm::vec3(0.2f));
+		litShader.set("light.diffuseColor", lightColor * glm::vec3(0.5f));
+		litShader.set("light.specularColor", color(1));
 
 		glm::mat4 normalMatrix(0);
-		matrix_cofactor(static_cast<float*>(glm::value_ptr(litModel)), static_cast<float*>(glm::value_ptr(normalMatrix)));
+		matrix_cofactor(
+			glm::value_ptr(litModel),
+			glm::value_ptr(normalMatrix));
 
 		litShader.set("normalMatrix", glm::mat3(normalMatrix));
 

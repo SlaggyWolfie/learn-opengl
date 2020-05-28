@@ -17,7 +17,5 @@ void main()
     gl_Position = mvp * vec4(attr_position, 1);
     
     fragmentPosition = vec3(model * vec4(attr_position, 1.0));
-//    fragmentNormal = attr_normal;
-//    fragmentNormal = mat3(transpose(inverse(model))) * attr_normal;
     fragmentNormal = normalMatrix * attr_normal;
 }
