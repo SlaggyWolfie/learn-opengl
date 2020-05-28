@@ -11,12 +11,14 @@ struct Material
 {
 	sampler2D diffuse;
 	sampler2D specular;
+//	sampler2D emissive;
 	float shininess;
 };
 
 struct Light
 {
-	vec3 position;
+	//vec3 position;
+	vec3 direction;
 
 	vec3 ambientColor;
 	vec3 diffuseColor;
@@ -31,8 +33,9 @@ uniform vec3 viewerPosition;
 void main()
 {
 	// texture samples
-	vec3 diffuseSample = vec3(texture(material.diffuse, textureCoordinate));
-	vec3 specularSample = vec3(texture(material.specular, textureCoordinate));
+	vec3 diffuseSample = texture(material.diffuse, textureCoordinate).rgb;
+	vec3 specularSample = texture(material.specular, textureCoordinate).rgb;
+//	vec3 emissiveSample = texture(material.emissive, textureCoordinate).rgb;
 
 	// ambient
 	// first parameter is intensity
@@ -40,7 +43,8 @@ void main()
 	
 	// diffuse
 	vec3 nNormal = normalize(fragmentNormal);
-	vec3 nLightDirection = normalize(light.position - fragmentPosition);
+	vec3 nLightDirection = normalize(-light.direction);
+//	vec3 nLightDirection = normalize(light.position - fragmentPosition);
 
 	float diffuseStrength = max(dot(nNormal, nLightDirection), 0.0);
 	vec3 diffuseColor = light.diffuseColor * (diffuseStrength * diffuseSample);
@@ -53,6 +57,7 @@ void main()
 	vec3 specularColor = light.specularColor * (specularSample * specularStrength);
 
 	vec3 result = ambientColor + diffuseColor + specularColor;
+//	result += emissiveSample;
 
 	fragmentColor = vec4(result, 1.0);
 } 

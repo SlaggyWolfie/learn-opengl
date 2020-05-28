@@ -100,8 +100,9 @@ int main()
 	//----- end of window setup -----//
 
 	const unsigned int texID_diffuseMap = loadTexture("assets/container2.png");
-	//const unsigned int texID_specularMap = loadTexture("assets/container2_specular.png");
-	const unsigned int texID_specularMap = loadTexture("assets/lighting_maps_specular_color.png");
+	const unsigned int texID_specularMap = loadTexture("assets/container2_specular.png");
+	//const unsigned int texID_specularMap = loadTexture("assets/lighting_maps_specular_color.png");
+	//const unsigned int texID_emissionMap = loadTexture("assets/matrix.jpg");
 
 	float vertices[] =
 	{
@@ -147,6 +148,20 @@ int main()
 		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
 		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+	};
+
+	glm::vec3 cubePositions[] =
+	{
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
 	unsigned int vao, vbo;
@@ -210,6 +225,7 @@ int main()
 	litShader.use();
 	litShader.set("material.diffuse", 0);
 	litShader.set("material.specular", 1);
+	litShader.set("material.emissive", 2);
 
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
@@ -242,8 +258,8 @@ int main()
 
 		glm::mat4 litModel = identity;
 		litShader.set("model", litModel);
-		litShader.set("view", view);
-		litShader.set("projection", projection);
+		//litShader.set("view", view);
+		//litShader.set("projection", projection);
 		litShader.set("mvp", projection * view * litModel);
 
 		litShader.set("viewerPosition", camera->position);
@@ -254,7 +270,8 @@ int main()
 		//lightColor.g = sin(currentFrame * 0.7f);
 		//lightColor.b = sin(currentFrame * 1.3f);
 
-		litShader.set("light.position", lightPosition);
+		//litShader.set("light.position", lightPosition);
+		litShader.set("light.direction", glm::vec3(-0.2f, -1, -0.3f));
 		litShader.set("light.ambientColor", lightColor * glm::vec3(0.2f));
 		litShader.set("light.diffuseColor", lightColor * glm::vec3(0.5f));
 		litShader.set("light.specularColor", color(1));
@@ -268,26 +285,44 @@ int main()
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texID_diffuseMap);
-		
+
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texID_specularMap);
+
+		//glActiveTexture(GL_TEXTURE2);
+		//glBindTexture(GL_TEXTURE_2D, texID_emissionMap);
 
 		// > seeing as we only have a single VAO there's no need to bind it every time,
 		// > but we'll do so to keep things a bit more organized
 		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		lightShader.use();
+		for (uint i = 0; i < 10; i++)
+		{
+			glm::mat4 model(1);
+			model = glm::translate(model, cubePositions[i]);
+			const float angle = float(20) * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1, 0.3f, 0.5f));
+			matrix_cofactor(glm::value_ptr(model), glm::value_ptr(normalMatrix));
 
-		glm::mat4 lightModel = identity;
-		lightModel = glm::translate(lightModel, lightPosition);
-		lightModel = glm::scale(lightModel, lightScale);
+			litShader.set("model", model);
+			litShader.set("mvp", projection * view * model);
+			litShader.set("normalMatrix", glm::mat3(normalMatrix));
 
-		lightShader.set("mvp", projection * view * lightModel);
-		lightShader.set("lightColor", lightColor);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
-		glBindVertexArray(vaoLight);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//lightShader.use();
+
+		//glm::mat4 lightModel = identity;
+		//lightModel = glm::translate(lightModel, lightPosition);
+		//lightModel = glm::scale(lightModel, lightScale);
+
+		//lightShader.set("mvp", projection * view * lightModel);
+		//lightShader.set("lightColor", lightColor);
+
+		//glBindVertexArray(vaoLight);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// > no need to unbind it every time 
 		//glBindVertexArray(0);
@@ -427,8 +462,15 @@ unsigned int loadTexture(const std::string& path)
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		//float borderColor[] = { 1, 1, 0, 1 }; // brown-ish?
+		//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
@@ -436,7 +478,7 @@ unsigned int loadTexture(const std::string& path)
 	{
 		std::cout << "Texture failed to load at path: " << path << std::endl;
 	}
-	
+
 	stbi_image_free(data);
 
 	return textureID;
