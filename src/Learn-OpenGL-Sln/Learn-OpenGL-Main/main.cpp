@@ -279,7 +279,8 @@ int main()
 
 		litShader.set("light.position", camera->position);
 		litShader.set("light.spotlightDirection", camera->forward);
-		litShader.set("light.spotlightCutOff", glm::cos(glm::radians(12.5f)));
+		litShader.set("light.spotlightInnerCutOff", glm::cos(glm::radians(12.5f)));
+		litShader.set("light.spotlightOuterCutOff", glm::cos(glm::radians(17.5f)));
 
 		litShader.set("light.ambientColor", lightColor * glm::vec3(0.1f));
 		litShader.set("light.diffuseColor", lightColor * glm::vec3(0.8f));
