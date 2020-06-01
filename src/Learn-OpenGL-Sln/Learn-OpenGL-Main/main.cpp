@@ -222,7 +222,7 @@ int main()
 	glm::vec3 lightPosition(1.2f, 1, 2);
 	const glm::vec3 lightScale(0.2f);
 	const float lightRange = 50; // meters?
-	
+
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
 
@@ -274,11 +274,16 @@ int main()
 		//lightColor.g = sin(currentFrame * 0.7f);
 		//lightColor.b = sin(currentFrame * 1.3f);
 
-		litShader.set("light.position", lightPosition);
+		//litShader.set("light.position", lightPosition);
 		//litShader.set("light.direction", glm::vec3(-0.2f, -1, -0.3f));
-		litShader.set("light.ambientColor", lightColor * glm::vec3(0.2f));
-		litShader.set("light.diffuseColor", lightColor * glm::vec3(0.5f));
-		litShader.set("light.specularColor", color(1));
+
+		litShader.set("light.position", camera->position);
+		litShader.set("light.spotlightDirection", camera->forward);
+		litShader.set("light.spotlightCutOff", glm::cos(glm::radians(12.5f)));
+
+		litShader.set("light.ambientColor", lightColor * glm::vec3(0.1f));
+		litShader.set("light.diffuseColor", lightColor * glm::vec3(0.8f));
+		litShader.set("light.specularColor", lightColor * glm::vec3(1));
 
 		glm::mat4 normalMatrix(0);
 		matrix_cofactor(
@@ -494,7 +499,6 @@ void parse_light_attenuation(const Shader& shader, const float distance)
 {
 	const LightAttenuationTerms::AttenuationTerms terms =
 		light_attenuation_terms.getAttenuation(distance);
-
 
 	//float attenuation = 1.0f / (terms.constant + terms.linear * distance + terms.quadratic * (distance * distance));
 

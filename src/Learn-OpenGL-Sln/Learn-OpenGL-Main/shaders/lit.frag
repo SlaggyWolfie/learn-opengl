@@ -25,7 +25,9 @@ struct LightAttenuation
 struct Light
 {
 	vec3 position;
-//	vec3 direction;
+	vec3 spotlightDirection;
+
+	float spotlightCutOff;
 
 	vec3 ambientColor;
 	vec3 diffuseColor;
@@ -41,13 +43,14 @@ uniform vec3 viewerPosition;
 
 void main()
 {
+	vec3 result = vec3(0);
+
 	// texture samples
 	vec3 diffuseSample = texture(material.diffuse, textureCoordinate).rgb;
 	vec3 specularSample = texture(material.specular, textureCoordinate).rgb;
 //	vec3 emissiveSample = texture(material.emissive, textureCoordinate).rgb;
 
 	// ambient
-	// first parameter is intensity
 	vec3 ambientColor = light.ambientColor * diffuseSample;
 	
 	// diffuse
@@ -56,24 +59,37 @@ void main()
 	vec3 lightDirection = light.position - fragmentPosition;
 	vec3 nLightDirection = normalize(lightDirection);
 
-	float diffuseStrength = max(dot(nNormal, nLightDirection), 0.0);
-	vec3 diffuseColor = light.diffuseColor * (diffuseStrength * diffuseSample);
+	float theta = dot(nLightDirection, normalize(-light.spotlightDirection));
 
-	// specular
-	vec3 nViewerDirection = normalize(viewerPosition - fragmentPosition);
-	vec3 reflectionDirection = normalize(reflect(-nLightDirection, nNormal));
+	if (theta > light.spotlightCutOff)
+	{
+		float diffuseStrength = max(dot(nNormal, nLightDirection), 0.0);
+		vec3 diffuseColor = light.diffuseColor * (diffuseStrength * diffuseSample);
 
-	float specularStrength = pow(max(dot(nViewerDirection, reflectionDirection), 0.0), material.shininess);
-	vec3 specularColor = light.specularColor * (specularSample * specularStrength);
+		// specular
+		vec3 nViewerDirection = normalize(viewerPosition - fragmentPosition);
+		vec3 reflectionDirection = normalize(reflect(-nLightDirection, nNormal));
 
-	// attenuation calculations
-	float lightDistance = length(lightDirection);
-	LightAttenuation la = light.attenuation;
-	// att = 1 / (constant + linear * distance + quadratic * distance^2)
-	float attenuation = 1.0 / (la.constant + la.linear * lightDistance + la.quadratic * (lightDistance * lightDistance));
+		float specularStrength = pow(max(dot(nViewerDirection, reflectionDirection), 0.0), material.shininess);
+		vec3 specularColor = light.specularColor * (specularSample * specularStrength);
 
-	vec3 result = ambientColor + diffuseColor + specularColor;
-	result *= attenuation;
+		// attenuation calculations
+		float lightDistance = length(lightDirection);
+		LightAttenuation la = light.attenuation;
+		// att = 1 / (constant + linear * distance + quadratic * distance^2)
+		float attenuation = 1.0 / (la.constant + la.linear * lightDistance + la.quadratic * (lightDistance * lightDistance));
+
+//		ambientColor *= attenuation;
+		diffuseColor *= attenuation;
+		specularColor *= attenuation;
+
+		result = ambientColor + diffuseColor + specularColor;
+	}
+	else
+	{
+		result = ambientColor;
+	}
+
 //	result += emissiveSample;
 
 	fragmentColor = vec4(result, 1.0);
