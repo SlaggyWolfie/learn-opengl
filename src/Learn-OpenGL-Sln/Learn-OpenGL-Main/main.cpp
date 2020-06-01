@@ -54,7 +54,10 @@ float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, in
 void matrix_cofactor(const float src[16], float dst[16]);
 void parse_basic_material(const Shader& shader, const BasicMaterialLibrary::BasicMaterial& material);
 unsigned int loadTexture(const std::string& path);
-void parse_light_attenuation(const Shader& shader, float distance);
+void parse_light_attenuation(const Shader& shader, const std::string& attenuationAddress, const float distance);
+
+template<typename ... Args>
+std::string string_format(const std::string& format, Args ... args);
 
 int main()
 {
@@ -219,17 +222,32 @@ int main()
 
 	const color objectColor(1, 0.5f, 0.31f);
 
-	glm::vec3 lightPosition(1.2f, 1, 2);
 	const glm::vec3 lightScale(0.2f);
 	const float lightRange = 50; // meters?
+	color lightColor(1);
 
-	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
+	glm::vec3 pointLightPositions[] =
+	{
+		glm::vec3(0.7f, 0.2f, 2.0f),
+		glm::vec3(2.3f, -3.3f, -4.0f),
+		glm::vec3(-4.0f, 2.0f, -12.0f),
+		glm::vec3(0.0f, 0.0f, -3.0f)
+	};
+
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
+	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 
 	litShader.use();
 	litShader.set("material.diffuse", 0);
 	litShader.set("material.specular", 1);
 	litShader.set("material.emissive", 2);
+	litShader.set("material.shininess", 32.0f);
+
+
+	auto point_light_address = [](const uint i)
+	{
+		return string_format("pointLights[%i]", i);
+	};
 
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
@@ -238,53 +256,71 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+		// Pre-input calculations | Critical
 		view = camera->viewMatrix();
 		projection = glm::perspective(glm::radians(camera->fov),
 			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
-		//lightPosition.x = 1 + sin(currentFrame) * 2;
-		//lightPosition.y = sin(currentFrame / 2);
-
-		process_input(window);
-
-		// rendering
-		glClearColor
-		(
-			_clearColor[0],
-			_clearColor[1],
-			_clearColor[2],
-			_clearColor[3]
-		);
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		litShader.use();
-
-		glm::mat4 litModel = identity;
-		litShader.set("model", litModel);
-		//litShader.set("view", view);
-		//litShader.set("projection", projection);
-		litShader.set("mvp", projection * view * litModel);
-
-		litShader.set("viewerPosition", camera->position);
-		litShader.set("material.shininess", 32.0f);
-
-		color lightColor(1);
+		// Pre-input calculations | Non-critical
 		//lightColor.r = sin(currentFrame * 2.0f);
 		//lightColor.g = sin(currentFrame * 0.7f);
 		//lightColor.b = sin(currentFrame * 1.3f);
 
-		//litShader.set("light.position", lightPosition);
-		//litShader.set("light.direction", glm::vec3(-0.2f, -1, -0.3f));
+		process_input(window);
 
-		litShader.set("light.position", camera->position);
-		litShader.set("light.spotlightDirection", camera->forward);
-		litShader.set("light.spotlightInnerCutOff", glm::cos(glm::radians(12.5f)));
-		litShader.set("light.spotlightOuterCutOff", glm::cos(glm::radians(17.5f)));
+		// rendering
+		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		litShader.set("light.ambientColor", lightColor * glm::vec3(0.1f));
-		litShader.set("light.diffuseColor", lightColor * glm::vec3(0.8f));
-		litShader.set("light.specularColor", lightColor * glm::vec3(1));
+		lightShader.use();
+
+		for (uint i = 0; i < 4; ++i)
+		{
+			glm::mat4 lightModel = identity;
+			lightModel = glm::translate(lightModel, pointLightPositions[i]);
+			lightModel = glm::scale(lightModel, lightScale);
+
+			lightShader.set("mvp", projection * view * lightModel);
+			lightShader.set("lightColor", lightColor);
+
+			glBindVertexArray(vaoLight);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+		litShader.use();
+
+		glm::mat4 litModel = identity;
+
+		litShader.set("viewerPosition", camera->position);
+
+		// Directional light
+		litShader.set("directionalLight.direction", glm::vec3(-0.2f, -1, -0.3f));
+		litShader.set("directionalLight.colors.ambient", lightColor * glm::vec3(0.05f));
+		litShader.set("directionalLight.colors.diffuse", lightColor * glm::vec3(0.4f));
+		litShader.set("directionalLight.colors.specular", lightColor * glm::vec3(0.5f));
+
+		// Point lights
+		for (uint i = 0; i < 4; ++i)
+		{
+			const std::string address = point_light_address(i);
+			
+			litShader.set(std::string(address).append(".position"), pointLightPositions[i]);
+			litShader.set(std::string(address).append(".colors.ambient"), lightColor * glm::vec3(0.05f));
+			litShader.set(std::string(address).append(".colors.diffuse"), lightColor * glm::vec3(0.8f));
+			litShader.set(std::string(address).append(".colors.specular"), lightColor * glm::vec3(1));
+
+			parse_light_attenuation(litShader, std::string(address).append(".attenuation"), lightRange);
+		}
+
+		litShader.set("spotlight.position", camera->position);
+		litShader.set("spotlight.direction", camera->forward);
+		litShader.set("spotlight.innerCutoff", glm::cos(glm::radians(12.5f)));
+		litShader.set("spotlight.outerCutoff", glm::cos(glm::radians(17.5f)));
+		litShader.set("spotlight.colors.ambient", lightColor * glm::vec3(0));
+		litShader.set("spotlight.colors.diffuse", lightColor * glm::vec3(1));
+		litShader.set("spotlight.colors.specular", lightColor * glm::vec3(1));
+		
+		parse_light_attenuation(litShader, "spotlight.attenuation", lightRange);
 
 		glm::mat4 normalMatrix(0);
 		matrix_cofactor(
@@ -307,7 +343,7 @@ int main()
 		glBindVertexArray(vao);
 		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		for (uint i = 0; i < 10; i++)
+		for (uint i = 0; i < 10; ++i)
 		{
 			glm::mat4 model(1);
 			model = glm::translate(model, cubePositions[i]);
@@ -316,24 +352,13 @@ int main()
 			matrix_cofactor(glm::value_ptr(model), glm::value_ptr(normalMatrix));
 
 			litShader.set("model", model);
+			//litShader.set("view", view);
+			//litShader.set("projection", projection);
 			litShader.set("mvp", projection * view * model);
 			litShader.set("normalMatrix", glm::mat3(normalMatrix));
 
-			parse_light_attenuation(litShader, lightRange);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-
-		lightShader.use();
-
-		glm::mat4 lightModel = identity;
-		lightModel = glm::translate(lightModel, lightPosition);
-		lightModel = glm::scale(lightModel, lightScale);
-
-		lightShader.set("mvp", projection * view * lightModel);
-		lightShader.set("lightColor", lightColor);
-
-		glBindVertexArray(vaoLight);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// > no need to unbind it every time 
 		//glBindVertexArray(0);
@@ -496,15 +521,25 @@ unsigned int loadTexture(const std::string& path)
 	return textureID;
 }
 
-void parse_light_attenuation(const Shader& shader, const float distance)
+void parse_light_attenuation(const Shader& shader, const std::string& attenuationAddress, const float distance)
 {
-	const LightAttenuationTerms::AttenuationTerms terms =
-		light_attenuation_terms.getAttenuation(distance);
+	const LightAttenuationTerms::AttenuationTerms terms = light_attenuation_terms.getAttenuation(distance);
 
 	//float attenuation = 1.0f / (terms.constant + terms.linear * distance + terms.quadratic * (distance * distance));
 
 	shader.use();
-	shader.set("light.attenuation.constant", terms.constant);
-	shader.set("light.attenuation.linear", terms.linear);
-	shader.set("light.attenuation.quadratic", terms.quadratic);
+	shader.set(attenuationAddress + ".constant", terms.constant);
+	shader.set(attenuationAddress + ".linear", terms.linear);
+	shader.set(attenuationAddress + ".quadratic", terms.quadratic);
+}
+
+// https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
+template<typename ... Args>
+std::string string_format(const std::string& format, Args ... args)
+{
+	size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
+	if (size <= 0) { throw std::runtime_error("Error during formatting."); }
+	std::unique_ptr<char[]> buf(new char[size]);
+	snprintf(buf.get(), size, format.c_str(), args ...);
+	return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 }

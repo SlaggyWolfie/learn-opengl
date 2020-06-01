@@ -37,7 +37,6 @@ struct Spotlight
 };
 
 in vec2 textureCoordinate;
-
 in vec3 fragmentPosition;
 in vec3 fragmentNormal;
 
@@ -49,7 +48,7 @@ uniform vec3 viewerPosition;
 uniform DirectionalLight directionalLight;
 #define NR_POINT_LIGHTS 4
 uniform PointLight pointLights[NR_POINT_LIGHTS];
-//uniform Spotlight spotlight;
+uniform Spotlight spotlight;
 
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 n_normal, vec3 n_viewDirection);
 vec3 calculatePointLight(PointLight light, vec3 fragmentPosition, vec3 n_normal, vec3 n_viewDirection);
@@ -73,7 +72,7 @@ void main()
 	for (int i = 0; i < NR_POINT_LIGHTS; ++i)
 		result += calculatePointLight(pointLights[i], fragmentPosition, n_normal, n_viewDirection);
 
-//	result += calculateSpotlight(spotlight, fragmentPosition, n_normal, n_viewDirection);
+	result += calculateSpotlight(spotlight, fragmentPosition, n_normal, n_viewDirection);
 
 	result += samples.emissive;
 
@@ -127,8 +126,6 @@ vec3 calculateSpotlight(Spotlight light, vec3 fragmentPosition, vec3 n_normal, v
 {
 	vec3 result = vec3(0);
 
-	vec3 ambientColor = light.colors.ambient * samples.diffuse;
-
 	vec3 lightDirection = light.position - fragmentPosition;
 	vec3 n_lightDirection = normalize(lightDirection);
 	
@@ -144,10 +141,10 @@ vec3 calculateSpotlight(Spotlight light, vec3 fragmentPosition, vec3 n_normal, v
 	//float intensity = clamp((theta - light.spotlightOuterCutOff) / epsilon, 0, 1); // Tutorial version
 	float intensity = smoothstep(0, 1, (theta - light.outerCutoff) / epsilon);
 
-	result = ambientColor * attenuation;
-
 	if (theta > light.outerCutoff)
 	{
+		vec3 ambientColor = light.colors.ambient * samples.diffuse;
+
 		float diffuseStrength = max(dot(n_normal, n_lightDirection), 0);
 
 		vec3 reflectionDirection = reflect(-n_lightDirection, n_normal);
@@ -160,7 +157,12 @@ vec3 calculateSpotlight(Spotlight light, vec3 fragmentPosition, vec3 n_normal, v
 		diffuseColor *= attenuation * intensity;
 		specularColor *= attenuation * intensity;
 
-		vec3 result = ambientColor + diffuseColor + specularColor;
+		result = ambientColor + diffuseColor + specularColor;
+	}
+	else
+	{
+		vec3 ambientColor = light.colors.ambient * samples.diffuse;
+		result = ambientColor * attenuation;		
 	}
 
 	return result;
