@@ -160,8 +160,6 @@
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\default.frag" />
-    <None Include="shaders\default.vert" />
     <None Include="shaders\light.frag" />
     <None Include="shaders\light.vert" />
     <None Include="shaders\lit.frag" />
@@ -172,6 +170,8 @@
     <None Include="shaders\litPhong.vert" />
     <None Include="shaders\litPhongViewSpace.frag" />
     <None Include="shaders\litPhongViewSpace.vert" />
+    <None Include="shaders\unlitTexture.frag" />
+    <None Include="shaders\unlitTexture.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -41,7 +41,7 @@ public:
 	glm::mat4 viewMatrix() const;
 	void lookAt(const glm::vec3& target);
 	
-	void processMovement(movement directions, float deltaTime = 1.0f / 60.0f, GLboolean stuck = false);
+	void processMovement(movement directions, bool fast = false, float deltaTime = 1.0f / 60.0f, GLboolean stuck = false);
 	void processOrientation(glm::vec2 offset, GLboolean constrain = true);
 	void processZoom(float offset);
 };

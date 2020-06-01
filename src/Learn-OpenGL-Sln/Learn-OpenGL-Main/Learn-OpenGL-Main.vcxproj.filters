@@ -55,8 +55,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\default.frag" />
-    <None Include="shaders\default.vert" />
     <None Include="shaders\light.frag" />
     <None Include="shaders\light.vert" />
     <None Include="shaders\lit.vert" />
@@ -67,5 +65,7 @@
     <None Include="shaders\litGouraud.vert" />
     <None Include="shaders\litPhong.frag" />
     <None Include="shaders\litPhong.vert" />
+    <None Include="shaders\unlitTexture.vert" />
+    <None Include="shaders\unlitTexture.frag" />
   </ItemGroup>
 </Project>

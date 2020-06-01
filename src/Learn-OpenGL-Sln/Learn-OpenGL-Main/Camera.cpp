@@ -38,7 +38,7 @@ void Camera::lookAt(const glm::vec3& target)
 	yaw = glm::degrees(yaw_r);
 }
 
-void Camera::processMovement(const movement directions, const float deltaTime, GLboolean stuck)
+void Camera::processMovement(const movement directions, const bool fast, const float deltaTime, const GLboolean stuck)
 {
 	glm::vec3 direction(0);
 	if (directions & movement::FORWARD)  direction += forward;
@@ -46,7 +46,8 @@ void Camera::processMovement(const movement directions, const float deltaTime, G
 	if (directions & movement::LEFT)     direction -= right;
 	if (directions & movement::RIGHT)    direction += right;
 
-	position += direction * (movementSpeed * deltaTime);
+	if (!fast) position += direction * (movementSpeed * deltaTime);
+	else position += direction * (movementSpeed * 2 * deltaTime);
 	if (stuck) position.y = 0;
 }
 

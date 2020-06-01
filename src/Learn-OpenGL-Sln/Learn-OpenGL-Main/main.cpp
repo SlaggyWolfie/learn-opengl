@@ -15,6 +15,7 @@
 #include "Camera.hpp"
 #include <algorithm>
 #include "BasicMaterialLibrary.hpp"
+#include "LightAttenuationTerms.hpp"
 
 using color = glm::vec3;
 using color4 = glm::vec4;
@@ -42,6 +43,7 @@ glm::vec2 lastMousePosition = glm::vec2
 );
 
 Camera* camera = nullptr;
+LightAttenuationTerms light_attenuation_terms;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void process_input(GLFWwindow* window);
@@ -52,6 +54,7 @@ float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, in
 void matrix_cofactor(const float src[16], float dst[16]);
 void parse_basic_material(const Shader& shader, const BasicMaterialLibrary::BasicMaterial& material);
 unsigned int loadTexture(const std::string& path);
+void parse_light_attenuation(const Shader& shader, float distance);
 
 int main()
 {
@@ -218,7 +221,8 @@ int main()
 
 	glm::vec3 lightPosition(1.2f, 1, 2);
 	const glm::vec3 lightScale(0.2f);
-
+	const float lightRange = 50; // meters?
+	
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
 
@@ -270,8 +274,8 @@ int main()
 		//lightColor.g = sin(currentFrame * 0.7f);
 		//lightColor.b = sin(currentFrame * 1.3f);
 
-		//litShader.set("light.position", lightPosition);
-		litShader.set("light.direction", glm::vec3(-0.2f, -1, -0.3f));
+		litShader.set("light.position", lightPosition);
+		//litShader.set("light.direction", glm::vec3(-0.2f, -1, -0.3f));
 		litShader.set("light.ambientColor", lightColor * glm::vec3(0.2f));
 		litShader.set("light.diffuseColor", lightColor * glm::vec3(0.5f));
 		litShader.set("light.specularColor", color(1));
@@ -309,20 +313,21 @@ int main()
 			litShader.set("mvp", projection * view * model);
 			litShader.set("normalMatrix", glm::mat3(normalMatrix));
 
+			parse_light_attenuation(litShader, lightRange);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		//lightShader.use();
+		lightShader.use();
 
-		//glm::mat4 lightModel = identity;
-		//lightModel = glm::translate(lightModel, lightPosition);
-		//lightModel = glm::scale(lightModel, lightScale);
+		glm::mat4 lightModel = identity;
+		lightModel = glm::translate(lightModel, lightPosition);
+		lightModel = glm::scale(lightModel, lightScale);
 
-		//lightShader.set("mvp", projection * view * lightModel);
-		//lightShader.set("lightColor", lightColor);
+		lightShader.set("mvp", projection * view * lightModel);
+		lightShader.set("lightColor", lightColor);
 
-		//glBindVertexArray(vaoLight);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(vaoLight);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// > no need to unbind it every time 
 		//glBindVertexArray(0);
@@ -377,9 +382,10 @@ void process_input(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) direction |= Camera::movement::BACKWARD;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) direction |= Camera::movement::LEFT;
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) direction |= Camera::movement::RIGHT;
+	const bool shiftPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
 
 	if (direction)
-		camera->processMovement(Camera::movement(direction), deltaTime);
+		camera->processMovement(Camera::movement(direction), shiftPressed, deltaTime);
 }
 
 void mouse_callback(GLFWwindow*, const double x, const double y)
@@ -482,4 +488,18 @@ unsigned int loadTexture(const std::string& path)
 	stbi_image_free(data);
 
 	return textureID;
+}
+
+void parse_light_attenuation(const Shader& shader, const float distance)
+{
+	const LightAttenuationTerms::AttenuationTerms terms =
+		light_attenuation_terms.getAttenuation(distance);
+
+
+	//float attenuation = 1.0f / (terms.constant + terms.linear * distance + terms.quadratic * (distance * distance));
+
+	shader.use();
+	shader.set("light.attenuation.constant", terms.constant);
+	shader.set("light.attenuation.linear", terms.linear);
+	shader.set("light.attenuation.quadratic", terms.quadratic);
 }
