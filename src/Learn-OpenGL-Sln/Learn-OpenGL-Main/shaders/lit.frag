@@ -11,7 +11,7 @@ struct Material
 {
 	sampler2D diffuse;
 	sampler2D specular;
-//	sampler2D emissive;
+	sampler2D emissive;
 	float shininess;
 };
 
@@ -49,7 +49,7 @@ void main()
 	// texture samples
 	vec3 diffuseSample = texture(material.diffuse, textureCoordinate).rgb;
 	vec3 specularSample = texture(material.specular, textureCoordinate).rgb;
-//	vec3 emissiveSample = texture(material.emissive, textureCoordinate).rgb;
+	vec3 emissiveSample = texture(material.emissive, textureCoordinate).rgb;
 
 	// ambient
 	vec3 ambientColor = light.ambientColor * diffuseSample;
@@ -94,7 +94,7 @@ void main()
 		result = ambientColor;
 	}
 
-//	result += emissiveSample;
+	result += emissiveSample;
 
 	fragmentColor = vec4(result, 1.0);
 } 
