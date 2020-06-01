@@ -62,29 +62,37 @@ void main()
 
 	float theta = dot(nLightDirection, normalize(-light.spotlightDirection));
 	float epsilon = light.spotlightInnerCutOff - light.spotlightOuterCutOff;
-	float intensity = clamp((theta - light.spotlightOuterCutOff) / epsilon, 0, 1);
+	//float intensity = clamp((theta - light.spotlightOuterCutOff) / epsilon, 0, 1); // Tutorial version
+	float intensity = smoothstep(0, 1, (theta - light.spotlightOuterCutOff) / epsilon);
 
-	float diffuseStrength = max(dot(nNormal, nLightDirection), 0.0);
-	vec3 diffuseColor = light.diffuseColor * (diffuseStrength * diffuseSample);
+	if (theta > light.spotlightOuterCutOff)
+	{
+		float diffuseStrength = max(dot(nNormal, nLightDirection), 0.0);
+		vec3 diffuseColor = light.diffuseColor * (diffuseStrength * diffuseSample);
 
-	// specular
-	vec3 nViewerDirection = normalize(viewerPosition - fragmentPosition);
-	vec3 reflectionDirection = normalize(reflect(-nLightDirection, nNormal));
+		// specular
+		vec3 nViewerDirection = normalize(viewerPosition - fragmentPosition);
+		vec3 reflectionDirection = normalize(reflect(-nLightDirection, nNormal));
 
-	float specularStrength = pow(max(dot(nViewerDirection, reflectionDirection), 0.0), material.shininess);
-	vec3 specularColor = light.specularColor * (specularSample * specularStrength);
+		float specularStrength = pow(max(dot(nViewerDirection, reflectionDirection), 0.0), material.shininess);
+		vec3 specularColor = light.specularColor * (specularSample * specularStrength);
 
-	// attenuation calculations
-	float lightDistance = length(lightDirection);
-	LightAttenuation la = light.attenuation;
-	// att = 1 / (constant + linear * distance + quadratic * distance^2)
-	float attenuation = 1.0 / (la.constant + la.linear * lightDistance + la.quadratic * (lightDistance * lightDistance));
+		// attenuation calculations
+		float lightDistance = length(lightDirection);
+		LightAttenuation la = light.attenuation;
+		// att = 1 / (constant + linear * distance + quadratic * distance^2)
+		float attenuation = 1.0 / (la.constant + la.linear * lightDistance + la.quadratic * (lightDistance * lightDistance));
 
-	ambientColor *= attenuation;
-	diffuseColor *= attenuation * intensity;
-	specularColor *= attenuation * intensity;
+		ambientColor *= attenuation;
+		diffuseColor *= attenuation * intensity;
+		specularColor *= attenuation * intensity;
 
-	result = ambientColor + diffuseColor + specularColor;
+		result = ambientColor + diffuseColor + specularColor;
+	}
+	else
+	{
+		result = ambientColor;
+	}
 
 //	result += emissiveSample;
 
