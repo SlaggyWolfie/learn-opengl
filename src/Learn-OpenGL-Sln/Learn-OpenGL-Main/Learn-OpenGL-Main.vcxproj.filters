@@ -47,6 +47,12 @@
     <ClInclude Include="BasicMaterialLibrary.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LightAttenuationTerms.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Range.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\default.frag" />
