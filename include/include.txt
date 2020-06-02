@@ -5,3 +5,4 @@ glad
 KHR
 ---
 GLM - v0.9.9.8
+Assimp - v5.0.1
