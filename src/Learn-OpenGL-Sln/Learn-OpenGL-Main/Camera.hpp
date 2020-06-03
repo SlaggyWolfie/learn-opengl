@@ -1,4 +1,5 @@
-﻿#ifndef CAMERA_HPP
+﻿#pragma once
+#ifndef CAMERA_HPP
 #define CAMERA_HPP
 
 #include <glad/glad.h>

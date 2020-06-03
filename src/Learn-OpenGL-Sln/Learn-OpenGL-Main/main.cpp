@@ -238,9 +238,9 @@ int main()
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 
 	litShader.use();
-	litShader.set("material.diffuse", 0);
-	litShader.set("material.specular", 1);
-	litShader.set("material.emissive", 2);
+	litShader.set("material.texture_diffuse1", 0);
+	litShader.set("material.texture_specular1", 3);
+	litShader.set("material.texture_emissive1", 7);
 	litShader.set("material.shininess", 32.0f);
 
 
@@ -332,7 +332,12 @@ int main()
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texID_diffuseMap);
 
-		glActiveTexture(GL_TEXTURE1);
+		//glActiveTexture(GL_TEXTURE1);
+		// temporary hack because I added support for about 3 additional texture types
+		// though they're not all in the shader yet (lit.frag)
+		// diffuse (3 maps), specular (ditto), emissive 1
+		// but specular is second, so... hard hack
+		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, texID_specularMap);
 
 		//glActiveTexture(GL_TEXTURE2);
@@ -537,9 +542,9 @@ void parse_light_attenuation(const Shader& shader, const std::string& attenuatio
 template<typename ... Args>
 std::string string_format(const std::string& format, Args ... args)
 {
-	size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
+	const size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
 	if (size <= 0) { throw std::runtime_error("Error during formatting."); }
-	std::unique_ptr<char[]> buf(new char[size]);
+	const std::unique_ptr<char[]> buf(new char[size]);
 	snprintf(buf.get(), size, format.c_str(), args ...);
 	return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 }

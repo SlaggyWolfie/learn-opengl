@@ -1,4 +1,5 @@
-﻿#ifndef RANGE_HPP
+﻿#pragma once
+#ifndef RANGE_HPP
 #define RANGE_HPP
 #include <exception>
 
