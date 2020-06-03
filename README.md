@@ -13,3 +13,4 @@ Using several external libraries, currently:
 - GLAD — include-only, built online (?)
 - stb_image — directly included in project
 - GLM (v0.9.9.8) — include-only
+- Assimp (v5.0.1) — built from source | dynamically-linked.
