@@ -14,6 +14,13 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 	setup();
 }
 
+Mesh::~Mesh()
+{
+	//glDeleteVertexArrays(1, &_vao);
+	//glDeleteBuffers(1, &_vbo);
+	//glDeleteBuffers(1, &_ebo);
+}
+
 void Mesh::setup()
 {
 	glGenVertexArrays(1, &_vao);
@@ -22,7 +29,6 @@ void Mesh::setup()
 
 	glBindVertexArray(_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
@@ -43,6 +49,7 @@ void Mesh::setup()
 	// > vertex tangent
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
+
 	// > vertex bitangent
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
@@ -50,7 +57,7 @@ void Mesh::setup()
 	glBindVertexArray(0);
 }
 
-void Mesh::draw(const Shader& shader) const
+void Mesh::draw(const Shader& shader)
 {
 	unsigned int diffuseNumber = 1;
 	unsigned int specularNumber = 1;
@@ -73,19 +80,28 @@ void Mesh::draw(const Shader& shader) const
 		else if (name == "texture_height") number = std::to_string(heightNumber++);
 		else if (name == "texture_emissive") number = std::to_string(emissiveNumber++);
 
-		shader.set(std::string("material.").append(name).append(number), i);
+		std::string address("material.");
+		address.append(name).append(number);
+		shader.set(address, i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 
-	glActiveTexture(GL_TEXTURE0);
-
 	// Draw Mesh / Pipe-in bound information
 	glBindVertexArray(_vao);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
 	glBindVertexArray(0);
+	glActiveTexture(GL_TEXTURE0);
 }
 
 unsigned Mesh::vao() const
 {
 	return _vao;
+}
+
+void Mesh::freeGL()
+{
+	glDeleteVertexArrays(1, &_vao);
+	glDeleteBuffers(1, &_vbo);
+	glDeleteBuffers(1, &_ebo);
 }

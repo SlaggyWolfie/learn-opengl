@@ -65,7 +65,7 @@ void main()
 {
 	vec3 result = vec3(0);
 
-	// texture samples
+//	// texture samples
 	samples.diffuse1 = texture(material.texture_diffuse1, textureCoordinate).rgb;
 	samples.specular1 = texture(material.texture_specular1, textureCoordinate).rgb;
 	samples.emissive1 = texture(material.texture_emissive1, textureCoordinate).rgb;
@@ -81,9 +81,13 @@ void main()
 
 	result += calculateSpotlight(spotlight, fragmentPosition, n_normal, n_viewDirection);
 
-	result += samples.emissive1;
-
+//	result += samples.emissive1;
+	
 	fragmentColor = vec4(result, 1.0);
+
+//	fragmentColor = vec4(1);
+//	fragmentColor = texture(material.texture_specular1, textureCoordinate);
+//	fragmentColor = vec4(samples.specular1, 1);
 } 
 
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 n_normal, vec3 n_viewDirection)

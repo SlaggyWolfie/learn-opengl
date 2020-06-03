@@ -16,6 +16,7 @@
 #include <algorithm>
 #include "BasicMaterialLibrary.hpp"
 #include "LightAttenuationTerms.hpp"
+#include "Model.hpp"
 
 using color = glm::vec3;
 using color4 = glm::vec4;
@@ -105,11 +106,6 @@ int main()
 
 	//----- end of window setup -----//
 
-	const unsigned int texID_diffuseMap = loadTexture("assets/container2.png");
-	const unsigned int texID_specularMap = loadTexture("assets/container2_specular.png");
-	//const unsigned int texID_specularMap = loadTexture("assets/lighting_maps_specular_color.png");
-	//const unsigned int texID_emissionMap = loadTexture("assets/matrix.jpg");
-
 	float vertices[] =
 	{
 		// positions          // normals           // texture coordinates
@@ -156,20 +152,6 @@ int main()
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
-	glm::vec3 cubePositions[] =
-	{
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
-
 	unsigned int vao, vbo;
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -188,26 +170,7 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	// normal attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	uint vaoLight = 0;
-	glGenVertexArrays(1, &vaoLight);
-
-	glBindVertexArray(vaoLight);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
 	glBindVertexArray(0);
 
 	const glm::mat4 identity(1);
@@ -237,12 +200,14 @@ int main()
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 
-	litShader.use();
-	litShader.set("material.texture_diffuse1", 0);
-	litShader.set("material.texture_specular1", 3);
-	litShader.set("material.texture_emissive1", 7);
-	litShader.set("material.shininess", 32.0f);
+	//litShader.use();
+	//litShader.set("material.texture_diffuse1", 0);
+	//litShader.set("material.texture_specular1", 3);
+	//litShader.set("material.texture_emissive1", 7);
+	//litShader.set("material.shininess", 32.0f);
 
+	stbi_set_flip_vertically_on_load(1);
+	Model backpack("assets/backpack/backpack.obj");
 
 	auto point_light_address = [](const uint i)
 	{
@@ -274,23 +239,20 @@ int main()
 
 		lightShader.use();
 
-		for (uint i = 0; i < 4; ++i)
+		glBindVertexArray(vao);
+		for (auto pointLightPosition : pointLightPositions)
 		{
 			glm::mat4 lightModel = identity;
-			lightModel = glm::translate(lightModel, pointLightPositions[i]);
+			lightModel = glm::translate(lightModel, pointLightPosition);
 			lightModel = glm::scale(lightModel, lightScale);
 
 			lightShader.set("mvp", projection * view * lightModel);
 			lightShader.set("lightColor", lightColor);
 
-			glBindVertexArray(vaoLight);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
 		litShader.use();
-
-		glm::mat4 litModel = identity;
-
 		litShader.set("viewerPosition", camera->position);
 
 		// Directional light
@@ -322,48 +284,22 @@ int main()
 		
 		parse_light_attenuation(litShader, "spotlight.attenuation", lightRange);
 
+
+		glm::mat4 model(1);
+		//model = glm::translate(model, glm::vec3(0));
+		//model = glm::scale(model, glm::vec3(1));
+		
+		litShader.set("model", model);
+		litShader.set("mvp", projection * view * model);
+		
 		glm::mat4 normalMatrix(0);
 		matrix_cofactor(
-			glm::value_ptr(litModel),
+			glm::value_ptr(model),
 			glm::value_ptr(normalMatrix));
-
+		//normalMatrix = glm::inverse(glm::transpose(model));
 		litShader.set("normalMatrix", glm::mat3(normalMatrix));
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texID_diffuseMap);
-
-		//glActiveTexture(GL_TEXTURE1);
-		// temporary hack because I added support for about 3 additional texture types
-		// though they're not all in the shader yet (lit.frag)
-		// diffuse (3 maps), specular (ditto), emissive 1
-		// but specular is second, so... hard hack
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, texID_specularMap);
-
-		//glActiveTexture(GL_TEXTURE2);
-		//glBindTexture(GL_TEXTURE_2D, texID_emissionMap);
-
-		// > seeing as we only have a single VAO there's no need to bind it every time,
-		// > but we'll do so to keep things a bit more organized
-		glBindVertexArray(vao);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		for (uint i = 0; i < 10; ++i)
-		{
-			glm::mat4 model(1);
-			model = glm::translate(model, cubePositions[i]);
-			const float angle = float(20) * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1, 0.3f, 0.5f));
-			matrix_cofactor(glm::value_ptr(model), glm::value_ptr(normalMatrix));
-
-			litShader.set("model", model);
-			//litShader.set("view", view);
-			//litShader.set("projection", projection);
-			litShader.set("mvp", projection * view * model);
-			litShader.set("normalMatrix", glm::mat3(normalMatrix));
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+				
+		backpack.draw(litShader);
 
 		// > no need to unbind it every time 
 		//glBindVertexArray(0);
@@ -374,10 +310,8 @@ int main()
 	}
 
 	// Clean-up!
-	glDeleteVertexArrays(1, &vaoLight);
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
-	//glDeleteBuffers(1, &ebo);
 
 	delete camera;
 
@@ -474,56 +408,6 @@ void matrix_cofactor(const float src[16], float dst[16])
 	dst[13] = matrix_minor(src, 0, 1, 2, 0, 2, 3);
 	dst[14] = -matrix_minor(src, 0, 1, 2, 0, 1, 3);
 	dst[15] = matrix_minor(src, 0, 1, 2, 0, 1, 2);
-}
-
-void parse_basic_material(const Shader& shader, const BasicMaterialLibrary::BasicMaterial& material)
-{
-	shader.use();
-	shader.set("material.ambientColor", material.ambient);
-	shader.set("material.diffuseColor", material.diffuse);
-	shader.set("material.specularColor", material.specular);
-	shader.set("material.shininess", material.shine);
-}
-
-unsigned int loadTexture(const std::string& path)
-{
-	unsigned int textureID = 0;
-	glGenTextures(1, &textureID);
-
-	int width, height, numberOfComponents;
-	unsigned char* data = stbi_load(path.c_str(), &width, &height, &numberOfComponents, 0);
-	if (data)
-	{
-		GLenum format;
-		if (numberOfComponents == 1) format = GL_RED;
-		else if (numberOfComponents == 3) format = GL_RGB;
-		else if (numberOfComponents == 4) format = GL_RGBA;
-		else format = GL_RGB;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		//float borderColor[] = { 1, 1, 0, 1 }; // brown-ish?
-		//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-	else
-	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-	}
-
-	stbi_image_free(data);
-
-	return textureID;
 }
 
 void parse_light_attenuation(const Shader& shader, const std::string& attenuationAddress, const float distance)

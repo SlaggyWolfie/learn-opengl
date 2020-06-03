@@ -31,9 +31,11 @@ public:
 	std::vector<Texture> textures;
 
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+	~Mesh();
 
-	void draw(const Shader& shader) const;
+	void draw(const Shader& shader);
 	unsigned int vao() const;
+	void freeGL();
 private:
 	unsigned int _vao = 0, _vbo = 0, _ebo = 0;
 	void setup();
