@@ -1,0 +1,2 @@
+# Don't ignore .obj's here! They might be Wavefront files.
+!*.obj
