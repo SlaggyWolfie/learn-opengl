@@ -180,13 +180,14 @@ int main()
 	//camera = new Camera(glm::vec3(1, 1, 5));
 	//camera->lookAt(glm::vec3(0));
 
-	camera = new Camera(glm::vec3(-2, -0.5f, 2.5f));
-	camera->lookAt(glm::vec3(0.5f, 0.5f, 1));
+	//camera = new Camera(glm::vec3(-2, -0.5f, 2.5f));
+	//camera->lookAt(glm::vec3(0.5f, 0.5f, 1));
+	camera = new Camera(glm::vec3(0, 0, 5));
 
 	const color objectColor(1, 0.5f, 0.31f);
 
 	const glm::vec3 lightScale(0.2f);
-	const float lightRange = 50; // meters?
+	const float lightRange = 5; // meters?
 	color lightColor(1);
 
 	glm::vec3 pointLightPositions[] =
@@ -200,11 +201,11 @@ int main()
 	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
 	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
 
-	//litShader.use();
+	litShader.use();
 	//litShader.set("material.texture_diffuse1", 0);
 	//litShader.set("material.texture_specular1", 3);
 	//litShader.set("material.texture_emissive1", 7);
-	//litShader.set("material.shininess", 32.0f);
+	litShader.set("material.shininess", 32.0f);
 
 	stbi_set_flip_vertically_on_load(1);
 	Model backpack("assets/backpack/backpack.obj");
@@ -258,6 +259,8 @@ int main()
 		// Directional light
 		litShader.set("directionalLight.direction", glm::vec3(-0.2f, -1, -0.3f));
 		litShader.set("directionalLight.colors.ambient", lightColor * glm::vec3(0.05f));
+		//litShader.set("directionalLight.colors.diffuse", lightColor * glm::vec3(0.9f));
+		//litShader.set("directionalLight.colors.specular", lightColor * glm::vec3(0.9f));
 		litShader.set("directionalLight.colors.diffuse", lightColor * glm::vec3(0.4f));
 		litShader.set("directionalLight.colors.specular", lightColor * glm::vec3(0.5f));
 

@@ -63,30 +63,29 @@ void Mesh::draw(const Shader& shader)
 	unsigned int specularNumber = 1;
 	unsigned int normalNumber = 1;
 	unsigned int heightNumber = 1;
-	unsigned int emissiveNumber = 1;
 
-	for (unsigned int i = 0; i < textures.size(); i++)
+	for (unsigned int i = 0; i < textures.size(); ++i)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
 
 		std::string number;
-		std::string name = textures[i].type;
+		const std::string name = textures[i].type;
 
 		// TODO
-		// hard-coded but whatever
+		// hard-coded but whatever for now
 		if (name == "texture_diffuse") number = std::to_string(diffuseNumber++);
 		else if (name == "texture_specular") number = std::to_string(specularNumber++);
 		else if (name == "texture_normal") number = std::to_string(normalNumber++);
 		else if (name == "texture_height") number = std::to_string(heightNumber++);
-		else if (name == "texture_emissive") number = std::to_string(emissiveNumber++);
 
 		std::string address("material.");
 		address.append(name).append(number);
-		shader.set(address, i);
+		shader.set(address, (int)i); // no idea why tbh but it works (finally)
+
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 
-	// Draw Mesh / Pipe-in bound information
+	// Draw Mesh / Pipe in bound information
 	glBindVertexArray(_vao);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 

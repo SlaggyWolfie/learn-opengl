@@ -1,10 +1,11 @@
 #include "Model.hpp"
 
+#include <iostream>
+
+#include <glad/glad.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include <iostream>
 #include "stb_image.h"
-#include <glad/glad.h>
 
 Model::Model(const std::string& path)
 {
@@ -24,7 +25,7 @@ void Model::draw(const Shader& shader)
 void Model::loadModel(const std::string& path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene* scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode)
 	{

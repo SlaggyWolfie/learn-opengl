@@ -8,7 +8,7 @@
 class Shader
 {
 public:
-	unsigned int ID;
+	unsigned int id;
 
 	Shader(const std::string& vertexPath, const std::string& fragmentPath);
 	~Shader();
@@ -26,9 +26,9 @@ public:
 	void set(const std::string& name, const glm::mat4& value) const;
 	
 private:
-	unsigned int getLocation(const std::string& name) const;
+	unsigned int location(const std::string& name) const;
 	
 	static void read(const std::string& vertexPath, const std::string& fragmentPath, std::string& vCode, std::string& fCode);
-	static unsigned int compile_link(const std::string& vCode, const std::string& fCode);
+	static unsigned int compileAndLink(const std::string& vCode, const std::string& fCode);
 };
 #endif
