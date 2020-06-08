@@ -82,5 +82,9 @@
     <None Include="shaders\litPhong.vert" />
     <None Include="shaders\unlitTexture.vert" />
     <None Include="shaders\unlitTexture.frag" />
+    <None Include="shaders\empty.frag" />
+    <None Include="shaders\empty.vert" />
+    <None Include="shaders\depth.frag" />
+    <None Include="shaders\depth.vert" />
   </ItemGroup>
 </Project>

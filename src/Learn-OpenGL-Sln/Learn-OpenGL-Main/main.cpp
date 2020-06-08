@@ -14,13 +14,10 @@
 #include "Shader.hpp"
 #include "Camera.hpp"
 #include <algorithm>
-#include "BasicMaterialLibrary.hpp"
 #include "LightAttenuationTerms.hpp"
-#include "Model.hpp"
 
 using color = glm::vec3;
 using color4 = glm::vec4;
-using uint = unsigned int;
 
 const int INIT_ERROR = -1;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
@@ -53,9 +50,7 @@ void scroll_callback(GLFWwindow*, double, double yOffset);
 
 float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2);
 void matrix_cofactor(const float src[16], float dst[16]);
-void parse_basic_material(const Shader& shader, const BasicMaterialLibrary::BasicMaterial& material);
 unsigned int loadTexture(const std::string& path);
-void parse_light_attenuation(const Shader& shader, const std::string& attenuationAddress, const float distance);
 
 template<typename ... Args>
 std::string string_format(const std::string& format, Args ... args);
@@ -65,7 +60,7 @@ int main()
 	// Initialize GLFW context with OpenGL version 3.3 using the Core OpenGL profile
 	glfwInit();
 
-	//-----Setup window-----//
+	//-----Setup-----//
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -104,9 +99,11 @@ int main()
 
 	glEnable(GL_DEPTH_TEST);
 
-	//----- end of window setup -----//
+	stbi_set_flip_vertically_on_load(1);
 
-	float vertices[] =
+	//----- end of setup -----//
+
+	float cubeVertices[] =
 	{
 		// positions          // normals           // texture coordinates
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
@@ -152,68 +149,78 @@ int main()
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
-	unsigned int vao, vbo;
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
+	const float planeVertices[] =
+	{
+		// > positions        // > texture Coords
+							  // > (note we set these higher than 1
+							  // > (together with GL_REPEAT as texture wrapping mode).
+							  // > this will cause the floor texture to repeat)
+		 5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+		-5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
 
-	//---------------------------------------------------------------------------//
-	// > bind the Vertex Array Object first, then bind and set vertex buffer(s),
-	// > and then configure vertex attributes(s). 
+		 5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+		 5.0f, -0.5f, -5.0f,  2.0f, 2.0f
+	};
+
+	unsigned int cubeVAO, cubeVBO;
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &cubeVBO);
+
 	// bind vertex array object
-	glBindVertexArray(vao);
+	glBindVertexArray(cubeVAO);
 
 	// copy vertex array in a vertex buffer for OpenGL
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
 
 	// position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+	// normals attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	unsigned int planeVAO, planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+
+	// bind vertex array object
+	glBindVertexArray(planeVAO);
+
+	// copy vertex array in a vertex buffer for OpenGL
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// normals attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 	const glm::mat4 identity(1);
-	glm::mat4 view = identity;
-	glm::mat4 projection = identity;
+	glm::mat4 model, view, projection;
+	model = view = projection = identity;
 
-	//camera = new Camera(glm::vec3(1, 1, 5));
-	//camera->lookAt(glm::vec3(0));
+	camera = new Camera(glm::vec3(0, 0, 3));
 
-	//camera = new Camera(glm::vec3(-2, -0.5f, 2.5f));
-	//camera->lookAt(glm::vec3(0.5f, 0.5f, 1));
-	camera = new Camera(glm::vec3(0, 0, 5));
+	Shader depthShader("shaders/depth.vert", "shaders/depth.frag");
 
-	const color objectColor(1, 0.5f, 0.31f);
+	const unsigned int cubeTextureID = loadTexture("assets/textures/marble.jpg");
+	const unsigned int floorTextureID = loadTexture("assets/textures/metal.png");
 
-	const glm::vec3 lightScale(0.2f);
-	const float lightRange = 5; // meters?
-	color lightColor(1);
-
-	glm::vec3 pointLightPositions[] =
-	{
-		glm::vec3(0.7f, 0.2f, 2.0f),
-		glm::vec3(2.3f, -3.3f, -4.0f),
-		glm::vec3(-4.0f, 2.0f, -12.0f),
-		glm::vec3(0.0f, 0.0f, -3.0f)
-	};
-
-	const Shader litShader("shaders/lit.vert", "shaders/lit.frag");
-	const Shader lightShader("shaders/light.vert", "shaders/light.frag");
-
-	litShader.use();
-	//litShader.set("material.texture_diffuse1", 0);
-	//litShader.set("material.texture_specular1", 3);
-	//litShader.set("material.texture_emissive1", 7);
-	litShader.set("material.shininess", 32.0f);
-
-	stbi_set_flip_vertically_on_load(1);
-	Model backpack("assets/backpack/backpack.obj");
-
-	auto point_light_address = [](const uint i)
-	{
-		return string_format("pointLights[%i]", i);
-	};
+	depthShader.use();
+	depthShader.set("textureSampler", 0);
 
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
@@ -227,85 +234,33 @@ int main()
 		projection = glm::perspective(glm::radians(camera->fov),
 			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
-		// Pre-input calculations | Non-critical
-		//lightColor.r = sin(currentFrame * 2.0f);
-		//lightColor.g = sin(currentFrame * 0.7f);
-		//lightColor.b = sin(currentFrame * 1.3f);
-
 		process_input(window);
 
 		// rendering
 		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		lightShader.use();
+		depthShader.set("view", view);
+		depthShader.set("projection", projection);
 
-		glBindVertexArray(vao);
-		for (auto pointLightPosition : pointLightPositions)
-		{
-			glm::mat4 lightModel = identity;
-			lightModel = glm::translate(lightModel, pointLightPosition);
-			lightModel = glm::scale(lightModel, lightScale);
+		glBindVertexArray(cubeVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, cubeTextureID);
 
-			lightShader.set("mvp", projection * view * lightModel);
-			lightShader.set("lightColor", lightColor);
+		model = glm::translate(identity, glm::vec3(-1, 0, -1));
+		depthShader.set("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		model = glm::translate(identity, glm::vec3(2, 0, 0));
+		depthShader.set("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		litShader.use();
-		litShader.set("viewerPosition", camera->position);
+		glBindVertexArray(planeVAO);
+		glBindTexture(GL_TEXTURE_2D, floorTextureID);
 
-		// Directional light
-		litShader.set("directionalLight.direction", glm::vec3(-0.2f, -1, -0.3f));
-		litShader.set("directionalLight.colors.ambient", lightColor * glm::vec3(0.05f));
-		//litShader.set("directionalLight.colors.diffuse", lightColor * glm::vec3(0.9f));
-		//litShader.set("directionalLight.colors.specular", lightColor * glm::vec3(0.9f));
-		litShader.set("directionalLight.colors.diffuse", lightColor * glm::vec3(0.4f));
-		litShader.set("directionalLight.colors.specular", lightColor * glm::vec3(0.5f));
-
-		// Point lights
-		for (uint i = 0; i < 4; ++i)
-		{
-			const std::string address = point_light_address(i);
-			
-			litShader.set(std::string(address).append(".position"), pointLightPositions[i]);
-			litShader.set(std::string(address).append(".colors.ambient"), lightColor * glm::vec3(0.05f));
-			litShader.set(std::string(address).append(".colors.diffuse"), lightColor * glm::vec3(0.8f));
-			litShader.set(std::string(address).append(".colors.specular"), lightColor * glm::vec3(1));
-
-			parse_light_attenuation(litShader, std::string(address).append(".attenuation"), lightRange);
-		}
-
-		litShader.set("spotlight.position", camera->position);
-		litShader.set("spotlight.direction", camera->forward);
-		litShader.set("spotlight.innerCutoff", glm::cos(glm::radians(12.5f)));
-		litShader.set("spotlight.outerCutoff", glm::cos(glm::radians(17.5f)));
-		litShader.set("spotlight.colors.ambient", lightColor * glm::vec3(0));
-		litShader.set("spotlight.colors.diffuse", lightColor * glm::vec3(1));
-		litShader.set("spotlight.colors.specular", lightColor * glm::vec3(1));
-		
-		parse_light_attenuation(litShader, "spotlight.attenuation", lightRange);
-
-
-		glm::mat4 model(1);
-		//model = glm::translate(model, glm::vec3(0));
-		//model = glm::scale(model, glm::vec3(1));
-		
-		litShader.set("model", model);
-		litShader.set("mvp", projection * view * model);
-		
-		glm::mat4 normalMatrix(0);
-		matrix_cofactor(
-			glm::value_ptr(model),
-			glm::value_ptr(normalMatrix));
-		//normalMatrix = glm::inverse(glm::transpose(model));
-		litShader.set("normalMatrix", glm::mat3(normalMatrix));
-				
-		backpack.draw(litShader);
-
-		// > no need to unbind it every time 
-		//glBindVertexArray(0);
+		depthShader.set("model", identity);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
 
 		// double buffering, and poll IO events
 		glfwSwapBuffers(window);
@@ -313,8 +268,10 @@ int main()
 	}
 
 	// Clean-up!
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(1, &vbo);
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &planeVAO);
+	glDeleteBuffers(1, &cubeVBO);
+	glDeleteBuffers(1, &planeVBO);
 
 	delete camera;
 
@@ -413,18 +370,6 @@ void matrix_cofactor(const float src[16], float dst[16])
 	dst[15] = matrix_minor(src, 0, 1, 2, 0, 1, 2);
 }
 
-void parse_light_attenuation(const Shader& shader, const std::string& attenuationAddress, const float distance)
-{
-	const LightAttenuationTerms::AttenuationTerms terms = light_attenuation_terms.getAttenuation(distance);
-
-	//float attenuation = 1.0f / (terms.constant + terms.linear * distance + terms.quadratic * (distance * distance));
-
-	shader.use();
-	shader.set(attenuationAddress + ".constant", terms.constant);
-	shader.set(attenuationAddress + ".linear", terms.linear);
-	shader.set(attenuationAddress + ".quadratic", terms.quadratic);
-}
-
 // https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 template<typename ... Args>
 std::string string_format(const std::string& format, Args ... args)
@@ -434,4 +379,45 @@ std::string string_format(const std::string& format, Args ... args)
 	const std::unique_ptr<char[]> buf(new char[size]);
 	snprintf(buf.get(), size, format.c_str(), args ...);
 	return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+}
+
+unsigned int loadTexture(const std::string& path)
+{
+	unsigned int textureID = 0;
+	glGenTextures(1, &textureID);
+
+	int width, height, numberOfComponents;
+	unsigned char* data = stbi_load(path.c_str(), &width, &height, &numberOfComponents, 0);
+	if (data)
+	{
+		GLenum format;
+		if (numberOfComponents == 1) format = GL_RED;
+		else if (numberOfComponents == 3) format = GL_RGB;
+		else if (numberOfComponents == 4) format = GL_RGBA;
+		else format = GL_RGB;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		//float borderColor[] = { 1, 1, 0, 1 }; // brown-ish?
+		//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else
+	{
+		std::cout << "Texture failed to load at path: " << path << std::endl;
+	}
+
+	stbi_image_free(data);
+
+	return textureID;
 }

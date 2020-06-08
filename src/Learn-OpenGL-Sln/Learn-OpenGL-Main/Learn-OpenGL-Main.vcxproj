@@ -168,6 +168,10 @@
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\depth.frag" />
+    <None Include="shaders\depth.vert" />
+    <None Include="shaders\empty.frag" />
+    <None Include="shaders\empty.vert" />
     <None Include="shaders\light.frag" />
     <None Include="shaders\light.vert" />
     <None Include="shaders\lit.frag" />
