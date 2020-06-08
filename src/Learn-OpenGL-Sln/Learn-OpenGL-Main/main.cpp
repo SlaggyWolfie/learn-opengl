@@ -96,11 +96,15 @@ int main()
 		std::cout << "Failed to initialize GLAD." << std::endl;
 		return INIT_ERROR;
 	}
-	
-	glEnable(GL_DEPTH_TEST);
-	//glDepthMask(GL_FALSE);
 
-	stbi_set_flip_vertically_on_load(1);
+	// > configure global OpenGL state
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+	//stbi_set_flip_vertically_on_load(1);
 
 	//----- end of setup -----//
 
@@ -181,7 +185,7 @@ int main()
 	glEnableVertexAttribArray(0);
 
 	// normals attribute
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -210,18 +214,19 @@ int main()
 	glBindVertexArray(0);
 
 	const glm::mat4 identity(1);
-	glm::mat4 model, view, projection;
-	model = view = projection = identity;
+	glm::mat4 view, projection;
+	glm::mat4 model = view = projection = identity;
 
 	camera = new Camera(glm::vec3(0, 0, 3));
 
-	Shader depthShader("shaders/depth.vert", "shaders/depth.frag");
+	Shader unlit("shaders/unlit.vert", "shaders/unlit.frag");
+	Shader outline("shaders/unlit.vert", "shaders/outline.frag");
 
 	const unsigned int cubeTextureID = loadTexture("assets/textures/marble.jpg");
 	const unsigned int floorTextureID = loadTexture("assets/textures/metal.png");
 
-	depthShader.use();
-	depthShader.set("textureSampler", 0);
+	unlit.use();
+	unlit.set("textureSampler", 0);
 
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
@@ -239,29 +244,75 @@ int main()
 
 		// rendering
 		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		depthShader.set("view", view);
-		depthShader.set("projection", projection);
+		unlit.use();
+		unlit.set("view", view);
+		unlit.set("projection", projection);
+
+		outline.use();
+		outline.set("view", view);
+		outline.set("projection", projection);
+
+		// don't write to the stencil buffer for the floor
+		glStencilMask(0x00);
+		glBindVertexArray(planeVAO);
+		glBindTexture(GL_TEXTURE_2D, floorTextureID);
+
+		unlit.use();
+		unlit.set("model", identity);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+
+		// > 1st render pass
+		// draw boxes as normal
+		// but also write to the depth buffer
+
+		glStencilFunc(GL_ALWAYS, 1, 0xff); // > all fragments should pass the stencil test
+		glStencilMask(0xff); // > enable writing	
 
 		glBindVertexArray(cubeVAO);
+
+		unlit.use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, cubeTextureID);
 
 		model = glm::translate(identity, glm::vec3(-1, 0, -1));
-		depthShader.set("model", model);
+		unlit.set("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		model = glm::translate(identity, glm::vec3(2, 0, 0));
-		depthShader.set("model", model);
+		unlit.set("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		glBindVertexArray(planeVAO);
-		glBindTexture(GL_TEXTURE_2D, floorTextureID);
+		// > 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
+		// > Because the stencil buffer is now filled with several 1s. The parts of the buffer that are 1 are not drawn, thus only drawing 
+		// > the objects' size differences, making it look like borders.
+		
+		glStencilFunc(GL_NOTEQUAL, 1, 0xff);
+		glStencilMask(0x00); // > disable writing to the stencil buffer
+		glDisable(GL_DEPTH_TEST);
 
-		depthShader.set("model", identity);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
+		outline.use();
+		const float scale = 1.1f;
+
+		glBindVertexArray(cubeVAO);
+		glBindTexture(GL_TEXTURE_2D, cubeTextureID);
+
+		model = glm::translate(identity, glm::vec3(-1, 0, -1));
+		model = glm::scale(model, glm::vec3(scale));
+		outline.set("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		model = glm::translate(identity, glm::vec3(2, 0, 0));
+		model = glm::scale(model, glm::vec3(scale));
+		outline.set("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// clean-up		
+		glStencilMask(0xff);
+		glStencilFunc(GL_ALWAYS, 1, 0xff);
+		glEnable(GL_DEPTH_TEST);
 
 		// double buffering, and poll IO events
 		glfwSwapBuffers(window);

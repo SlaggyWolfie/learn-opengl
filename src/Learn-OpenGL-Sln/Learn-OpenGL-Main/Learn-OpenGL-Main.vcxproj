@@ -182,8 +182,11 @@
     <None Include="shaders\litPhong.vert" />
     <None Include="shaders\litPhongViewSpace.frag" />
     <None Include="shaders\litPhongViewSpace.vert" />
-    <None Include="shaders\unlitTexture.frag" />
-    <None Include="shaders\unlitTexture.vert" />
+    <None Include="shaders\outline.frag" />
+    <None Include="shaders\mix.frag" />
+    <None Include="shaders\mix.vert" />
+    <None Include="shaders\unlit.frag" />
+    <None Include="shaders\unlit.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

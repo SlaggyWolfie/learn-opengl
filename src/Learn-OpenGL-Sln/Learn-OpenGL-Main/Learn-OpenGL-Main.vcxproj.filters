@@ -80,11 +80,14 @@
     <None Include="shaders\litGouraud.vert" />
     <None Include="shaders\litPhong.frag" />
     <None Include="shaders\litPhong.vert" />
-    <None Include="shaders\unlitTexture.vert" />
-    <None Include="shaders\unlitTexture.frag" />
     <None Include="shaders\empty.frag" />
     <None Include="shaders\empty.vert" />
     <None Include="shaders\depth.frag" />
     <None Include="shaders\depth.vert" />
+    <None Include="shaders\outline.frag" />
+    <None Include="shaders\mix.frag" />
+    <None Include="shaders\mix.vert" />
+    <None Include="shaders\unlit.frag" />
+    <None Include="shaders\unlit.vert" />
   </ItemGroup>
 </Project>
