@@ -96,8 +96,9 @@ int main()
 		std::cout << "Failed to initialize GLAD." << std::endl;
 		return INIT_ERROR;
 	}
-
+	
 	glEnable(GL_DEPTH_TEST);
+	//glDepthMask(GL_FALSE);
 
 	stbi_set_flip_vertically_on_load(1);
 
