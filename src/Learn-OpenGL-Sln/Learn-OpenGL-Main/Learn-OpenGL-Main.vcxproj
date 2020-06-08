@@ -151,6 +151,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_backpack.cpp" />
+    <ClCompile Include="main_stencil.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -187,6 +188,8 @@
     <None Include="shaders\mix.vert" />
     <None Include="shaders\unlit.frag" />
     <None Include="shaders\unlit.vert" />
+    <None Include="shaders\unlitTransparent.frag" />
+    <None Include="shaders\unlitTransparent.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

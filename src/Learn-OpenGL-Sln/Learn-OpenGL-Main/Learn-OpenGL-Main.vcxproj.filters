@@ -42,6 +42,9 @@
     <ClCompile Include="main_backpack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_stencil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.hpp">
@@ -89,5 +92,7 @@
     <None Include="shaders\mix.vert" />
     <None Include="shaders\unlit.frag" />
     <None Include="shaders\unlit.vert" />
+    <None Include="shaders\unlitTransparent.frag" />
+    <None Include="shaders\unlitTransparent.vert" />
   </ItemGroup>
 </Project>

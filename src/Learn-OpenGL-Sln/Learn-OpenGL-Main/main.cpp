@@ -99,10 +99,6 @@ int main()
 
 	// > configure global OpenGL state
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	//stbi_set_flip_vertically_on_load(1);
 
@@ -169,6 +165,18 @@ int main()
 		 5.0f, -0.5f, -5.0f,  2.0f, 2.0f
 	};
 
+	const float transparentVertices[] = 
+	{
+			// positions         // > texture Coords (swapped y coordinates because texture is flipped upside down)
+			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+			0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+			1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+			1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+			1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+	};
+
 	unsigned int cubeVAO, cubeVBO;
 	glGenVertexArrays(1, &cubeVAO);
 	glGenBuffers(1, &cubeVBO);
@@ -188,6 +196,7 @@ int main()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	// clean
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
@@ -210,8 +219,39 @@ int main()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	// clean
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	unsigned int transparentVAO, transparentVBO;
+	glGenVertexArrays(1, &transparentVAO);
+	glGenBuffers(1, &transparentVBO);
+
+	// bind vertex array object
+	glBindVertexArray(transparentVAO);
+
+	// copy vertex array in a vertex buffer for OpenGL
+	glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// normals attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	// clean
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	std::vector<glm::vec3> vegetation;
+	vegetation.emplace_back(-1.5f, 0.0f, -0.48f);
+	vegetation.emplace_back(1.5f, 0.0f, 0.51f);
+	vegetation.emplace_back(0.0f, 0.0f, 0.7f);
+	vegetation.emplace_back(-0.3f, 0.0f, -2.3f);
+	vegetation.emplace_back(0.5f, 0.0f, -0.6f);
 
 	const glm::mat4 identity(1);
 	glm::mat4 view, projection;
@@ -220,10 +260,11 @@ int main()
 	camera = new Camera(glm::vec3(0, 0, 3));
 
 	Shader unlit("shaders/unlit.vert", "shaders/unlit.frag");
-	Shader outline("shaders/unlit.vert", "shaders/outline.frag");
-
+	Shader unlitTransparent("shaders/unlitTransparent.vert", "shaders/unlitTransparent.frag");
+	
 	const unsigned int cubeTextureID = loadTexture("assets/textures/marble.jpg");
 	const unsigned int floorTextureID = loadTexture("assets/textures/metal.png");
+	const unsigned int transparentTextureID = loadTexture("assets/textures/grass.png");
 
 	unlit.use();
 	unlit.set("textureSampler", 0);
@@ -244,18 +285,16 @@ int main()
 
 		// rendering
 		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		unlit.use();
 		unlit.set("view", view);
 		unlit.set("projection", projection);
-
-		outline.use();
-		outline.set("view", view);
-		outline.set("projection", projection);
-
-		// don't write to the stencil buffer for the floor
-		glStencilMask(0x00);
+		
+		unlitTransparent.use();
+		unlitTransparent.set("view", view);
+		unlitTransparent.set("projection", projection);
+		
 		glBindVertexArray(planeVAO);
 		glBindTexture(GL_TEXTURE_2D, floorTextureID);
 
@@ -264,19 +303,11 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
-		// > 1st render pass
-		// draw boxes as normal
-		// but also write to the depth buffer
-
-		glStencilFunc(GL_ALWAYS, 1, 0xff); // > all fragments should pass the stencil test
-		glStencilMask(0xff); // > enable writing	
-
 		glBindVertexArray(cubeVAO);
-
-		unlit.use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, cubeTextureID);
 
+		unlit.use();
 		model = glm::translate(identity, glm::vec3(-1, 0, -1));
 		unlit.set("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -285,34 +316,17 @@ int main()
 		unlit.set("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		// > 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
-		// > Because the stencil buffer is now filled with several 1s. The parts of the buffer that are 1 are not drawn, thus only drawing 
-		// > the objects' size differences, making it look like borders.
-		
-		glStencilFunc(GL_NOTEQUAL, 1, 0xff);
-		glStencilMask(0x00); // > disable writing to the stencil buffer
-		glDisable(GL_DEPTH_TEST);
+		glBindVertexArray(transparentVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, transparentTextureID);
 
-		outline.use();
-		const float scale = 1.1f;
-
-		glBindVertexArray(cubeVAO);
-		glBindTexture(GL_TEXTURE_2D, cubeTextureID);
-
-		model = glm::translate(identity, glm::vec3(-1, 0, -1));
-		model = glm::scale(model, glm::vec3(scale));
-		outline.set("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		model = glm::translate(identity, glm::vec3(2, 0, 0));
-		model = glm::scale(model, glm::vec3(scale));
-		outline.set("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		// clean-up		
-		glStencilMask(0xff);
-		glStencilFunc(GL_ALWAYS, 1, 0xff);
-		glEnable(GL_DEPTH_TEST);
+		unlitTransparent.use();
+		for (auto veggiePosition : vegetation)
+		{
+			model = glm::translate(identity, veggiePosition);
+			unlitTransparent.set("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
 		// double buffering, and poll IO events
 		glfwSwapBuffers(window);
@@ -322,8 +336,10 @@ int main()
 	// Clean-up!
 	glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteVertexArrays(1, &planeVAO);
+	glDeleteVertexArrays(1, &transparentVAO);
 	glDeleteBuffers(1, &cubeVBO);
 	glDeleteBuffers(1, &planeVBO);
+	glDeleteBuffers(1, &transparentVBO);
 
 	delete camera;
 
@@ -452,9 +468,13 @@ unsigned int loadTexture(const std::string& path)
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+		//>  for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		
 		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
