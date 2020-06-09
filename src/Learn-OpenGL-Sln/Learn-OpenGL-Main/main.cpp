@@ -15,6 +15,7 @@
 #include "Camera.hpp"
 #include <algorithm>
 #include "LightAttenuationTerms.hpp"
+#include <map>
 
 using color = glm::vec3;
 using color4 = glm::vec4;
@@ -248,12 +249,12 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	std::vector<glm::vec3> vegetation;
-	vegetation.emplace_back(-1.5f, 0.0f, -0.48f);
-	vegetation.emplace_back(1.5f, 0.0f, 0.51f);
-	vegetation.emplace_back(0.0f, 0.0f, 0.7f);
-	vegetation.emplace_back(-0.3f, 0.0f, -2.3f);
-	vegetation.emplace_back(0.5f, 0.0f, -0.6f);
+	std::vector<glm::vec3> transparentObjectsPositions;
+	transparentObjectsPositions.emplace_back(-1.5f, 0.0f, -0.48f);
+	transparentObjectsPositions.emplace_back(1.5f, 0.0f, 0.51f);
+	transparentObjectsPositions.emplace_back(0.0f, 0.0f, 0.7f);
+	transparentObjectsPositions.emplace_back(-0.3f, 0.0f, -2.3f);
+	transparentObjectsPositions.emplace_back(0.5f, 0.0f, -0.6f);
 
 	const glm::mat4 identity(1);
 	glm::mat4 view, projection;
@@ -281,6 +282,14 @@ int main()
 		view = camera->viewMatrix();
 		projection = glm::perspective(glm::radians(camera->fov),
 			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
+
+		// farther objects are sorted to the back
+		std::map<float, glm::vec3> sortedTransparency;
+		for (auto transparentObjectsPosition : transparentObjectsPositions)
+		{
+			const float distance = glm::distance(camera->position, transparentObjectsPosition);
+			sortedTransparency[distance] = transparentObjectsPosition;
+		}
 
 		process_input(window);
 
@@ -318,9 +327,9 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, transparentTextureID);
 
 		unlit.use();
-		for (auto veggiePosition : vegetation)
+		for (auto it = sortedTransparency.rbegin(); it != sortedTransparency.rend(); ++it)
 		{
-			model = glm::translate(identity, veggiePosition);
+			model = glm::translate(identity, it->second);
 			unlit.set("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
