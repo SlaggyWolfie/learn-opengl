@@ -99,6 +99,8 @@ int main()
 
 	// > configure global OpenGL state
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//stbi_set_flip_vertically_on_load(1);
 
@@ -260,11 +262,10 @@ int main()
 	camera = new Camera(glm::vec3(0, 0, 3));
 
 	Shader unlit("shaders/unlit.vert", "shaders/unlit.frag");
-	Shader unlitTransparent("shaders/unlitTransparent.vert", "shaders/unlitTransparent.frag");
 	
 	const unsigned int cubeTextureID = loadTexture("assets/textures/marble.jpg");
 	const unsigned int floorTextureID = loadTexture("assets/textures/metal.png");
-	const unsigned int transparentTextureID = loadTexture("assets/textures/grass.png");
+	const unsigned int transparentTextureID = loadTexture("assets/textures/window.png");
 
 	unlit.use();
 	unlit.set("textureSampler", 0);
@@ -291,10 +292,6 @@ int main()
 		unlit.set("view", view);
 		unlit.set("projection", projection);
 		
-		unlitTransparent.use();
-		unlitTransparent.set("view", view);
-		unlitTransparent.set("projection", projection);
-		
 		glBindVertexArray(planeVAO);
 		glBindTexture(GL_TEXTURE_2D, floorTextureID);
 
@@ -320,11 +317,11 @@ int main()
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, transparentTextureID);
 
-		unlitTransparent.use();
+		unlit.use();
 		for (auto veggiePosition : vegetation)
 		{
 			model = glm::translate(identity, veggiePosition);
-			unlitTransparent.set("model", model);
+			unlit.set("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
 
