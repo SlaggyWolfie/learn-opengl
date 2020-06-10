@@ -186,6 +186,8 @@
     <None Include="shaders\outline.frag" />
     <None Include="shaders\mix.frag" />
     <None Include="shaders\mix.vert" />
+    <None Include="shaders\screen.frag" />
+    <None Include="shaders\screen.vert" />
     <None Include="shaders\unlit.frag" />
     <None Include="shaders\unlit.vert" />
     <None Include="shaders\unlitTransparent.frag" />

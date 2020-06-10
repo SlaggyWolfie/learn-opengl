@@ -15,6 +15,7 @@ Model::Model(const std::string& path)
 Model::~Model()
 {
 	for (auto& mesh : _meshes) mesh.freeGL();
+	for (auto& texture : _texturesLoaded) glDeleteTextures(1, &texture.id);
 }
 
 void Model::draw(const Shader& shader)

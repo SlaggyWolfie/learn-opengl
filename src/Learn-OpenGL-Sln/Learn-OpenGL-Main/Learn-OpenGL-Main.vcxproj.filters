@@ -94,5 +94,7 @@
     <None Include="shaders\unlit.vert" />
     <None Include="shaders\unlitTransparent.frag" />
     <None Include="shaders\unlitTransparent.vert" />
+    <None Include="shaders\screen.frag" />
+    <None Include="shaders\screen.vert" />
   </ItemGroup>
 </Project>

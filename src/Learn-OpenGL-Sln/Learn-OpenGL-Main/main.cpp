@@ -169,16 +169,16 @@ int main()
 		 5.0f, -0.5f, -5.0f,  2.0f, 2.0f
 	};
 
-	const float transparentVertices[] = 
+	const float transparentVertices[] =
 	{
-			// positions         // > texture Coords (swapped y coordinates because texture is flipped upside down)
-			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-			0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
-			1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+		// positions         // > texture Coords (swapped y coordinates because texture is flipped upside down)
+		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+		0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
 
-			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-			1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-			1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+		1.0f,  0.5f,  0.0f,  1.0f,  0.0f
 	};
 
 	unsigned int cubeVAO, cubeVBO;
@@ -264,18 +264,81 @@ int main()
 	camera = new Camera(glm::vec3(0, 0, 3));
 
 	Shader unlit("shaders/unlit.vert", "shaders/unlit.frag");
-	
-	const unsigned int cubeTextureID = loadTexture("assets/textures/marble.jpg");
+
+	//const unsigned int cubeTextureID = loadTexture("assets/textures/marble.jpg");
+	const unsigned int cubeTextureID = loadTexture("assets/textures/container.jpg");
 	const unsigned int floorTextureID = loadTexture("assets/textures/metal.png");
 	const unsigned int transparentTextureID = loadTexture("assets/textures/window.png");
 
 	unlit.use();
 	unlit.set("textureSampler", 0);
 
+	// frame buffer object
+	unsigned int fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	// generate an "image" to render to for post-processing
+	unsigned int screenBufferTextureID = 0;
+	glGenTextures(1, &screenBufferTextureID);
+	glBindTexture(GL_TEXTURE_2D, screenBufferTextureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenBufferTextureID, 0);
+
+	// render buffer object
+	unsigned int rbo = 0;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	// bind render buffer to frame buffer
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER::Framebuffer is not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	Shader screenShader("shaders/screen.vert", "shaders/screen.frag");
+
+	// > vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+	float quadVertices[] =
+	{
+		// positions   // texCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f
+	};
+
+	unsigned int quadVAO, quadVBO;
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	screenShader.use();
+	screenShader.set("textureSampler", 0);
+
+	//// draw as wireframe
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
 	{
-		const float currentFrame = float(glfwGetTime());
+		const auto currentFrame = float(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -294,14 +357,19 @@ int main()
 
 		process_input(window);
 
+		// first pass
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glEnable(GL_DEPTH_TEST);
+
 		// rendering
 		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// render the scene
 		unlit.use();
 		unlit.set("view", view);
 		unlit.set("projection", projection);
-		
+
 		glBindVertexArray(planeVAO);
 		glBindTexture(GL_TEXTURE_2D, floorTextureID);
 
@@ -335,18 +403,43 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
 
+		// second pass
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDisable(GL_DEPTH_TEST);
+		glClearColor(1, 1, 1, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		screenShader.use();
+		glBindVertexArray(quadVAO);
+		glBindTexture(GL_TEXTURE_2D, screenBufferTextureID);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
 		// double buffering, and poll IO events
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
 	// Clean-up!
+	// Scene
 	glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteVertexArrays(1, &planeVAO);
 	glDeleteVertexArrays(1, &transparentVAO);
+
 	glDeleteBuffers(1, &cubeVBO);
 	glDeleteBuffers(1, &planeVBO);
 	glDeleteBuffers(1, &transparentVBO);
+
+	glDeleteTextures(1, &cubeTextureID);
+	glDeleteTextures(1, &floorTextureID);
+	glDeleteTextures(1, &transparentTextureID);
+
+	// Post-Process
+	glDeleteVertexArrays(1, &quadVAO);
+
+	glDeleteBuffers(1, &fbo);
+	glDeleteBuffers(1, &rbo);
+
+	glDeleteTextures(1, &screenBufferTextureID);
 
 	delete camera;
 
@@ -481,7 +574,7 @@ unsigned int loadTexture(const std::string& path)
 		//>  for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-		
+
 		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
