@@ -21,7 +21,7 @@ private:
 	static const float DEFAULT_FOV;
 
 	void updateFromYawPitch();
-	void updateNonForwardDirections();
+	void updateNonForward();
 	static glm::mat4 bootlegGetLookAtMatrix(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up);
 	
 public:
@@ -41,6 +41,7 @@ public:
 
 	glm::mat4 viewMatrix() const;
 	void lookAt(const glm::vec3& target);
+	void updateForward();
 	
 	void processMovement(movement directions, bool fast = false, float deltaTime = 1.0f / 60.0f, GLboolean stuck = false);
 	void processOrientation(glm::vec2 offset, GLboolean constrain = true);

@@ -305,18 +305,18 @@ int main()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	Shader screenShader("shaders/screen.vert", "shaders/screen.frag");
-
-	// > vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+	
+	// > vertex attributes for a quad that fills part of the screen in Normalized Device Coordinates.
 	float quadVertices[] =
 	{
 		// positions   // texCoords
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  0.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
+		0.45f, 0.95f,  0.0f, 1.0f,
+		0.45f, 0.45f,  0.0f, 0.0f,
+		0.95f, 0.45f,  1.0f, 0.0f,
 
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-		 1.0f,  1.0f,  1.0f, 1.0f
+		0.45f, 0.95f,  0.0f, 1.0f,
+		0.95f, 0.45f,  1.0f, 0.0f,
+		0.95f, 0.95f,  1.0f, 1.0f
 	};
 
 	unsigned int quadVAO, quadVBO;
@@ -336,6 +336,8 @@ int main()
 
 	//// draw as wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
+	Camera rearView;
 
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
@@ -359,15 +361,68 @@ int main()
 
 		process_input(window);
 
-		// first pass
+		// Rear-view
+		rearView.position = camera->position;
+		rearView.forward = -camera->forward;
+		rearView.updateForward();
+
+		// zeroeth pass
+		// render from behind the controllable camera
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glEnable(GL_DEPTH_TEST);
 
 		// rendering
-		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
+		//glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
+		// clearing with a darker color because they rear view mixes with the background too much
+		glClearColor(0.1f, 0.1f, 0.1f, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// render the scene
+		// render the scene backwards
+		unlit.use();
+		unlit.set("view", rearView.viewMatrix());
+		unlit.set("projection", projection);
+
+		glBindVertexArray(planeVAO);
+		glBindTexture(GL_TEXTURE_2D, floorTextureID);
+
+		unlit.use();
+		unlit.set("model", identity);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+
+		glBindVertexArray(cubeVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, cubeTextureID);
+
+		unlit.use();
+		model = glm::translate(identity, glm::vec3(-1, 0, -1));
+		unlit.set("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		model = glm::translate(identity, glm::vec3(2, 0, 0));
+		unlit.set("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		glBindVertexArray(transparentVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, transparentTextureID);
+
+		unlit.use();
+		for (auto it = sortedTransparency.rbegin(); it != sortedTransparency.rend(); ++it)
+		{
+			model = glm::translate(identity, it->second);
+			unlit.set("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+
+		// first pass
+		// render the scene normally
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// rendering
+		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
 		unlit.use();
 		unlit.set("view", view);
 		unlit.set("projection", projection);
@@ -406,10 +461,10 @@ int main()
 		}
 
 		// second pass
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST);
-		glClearColor(1, 1, 1, 1);
-		glClear(GL_COLOR_BUFFER_BIT);
+		//glClearColor(1, 1, 1, 1);
+		//glClear(GL_COLOR_BUFFER_BIT);
 
 		screenShader.use();
 		glBindVertexArray(quadVAO);

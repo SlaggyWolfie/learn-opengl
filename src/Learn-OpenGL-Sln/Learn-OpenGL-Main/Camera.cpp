@@ -29,10 +29,10 @@ void Camera::updateFromYawPitch()
 	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
 	forward = glm::normalize(direction);
-	updateNonForwardDirections();
+	updateNonForward();
 }
 
-void Camera::updateNonForwardDirections()
+void Camera::updateNonForward()
 {
 	// > normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 	right = glm::normalize(glm::cross(forward, WORLD_UP));
@@ -69,13 +69,18 @@ glm::mat4 Camera::bootlegGetLookAtMatrix(const glm::vec3& eye, const glm::vec3& 
 void Camera::lookAt(const glm::vec3& target)
 {
 	forward = glm::normalize(target - position);
-	updateNonForwardDirections();
+	updateForward();
+}
 
+void Camera::updateForward()
+{
 	const float pitch_r = asin(forward.y);
 	const float yaw_r = -acos(forward.x / cos(pitch_r));
 
 	pitch = glm::degrees(pitch_r);
 	yaw = glm::degrees(yaw_r);
+
+	updateNonForward();
 }
 
 void Camera::processMovement(const movement directions, const bool fast, const float deltaTime, const GLboolean stuck)

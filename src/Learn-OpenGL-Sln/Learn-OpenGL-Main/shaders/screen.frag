@@ -46,6 +46,8 @@ void main()
 	// standard
 	vec4 sampled = texture(textureSampler, textureCoordinate);
 	fragmentColor = sampled;
+    
+    return;
 
 	// inversion
     //fragmentColor = vec4(vec3(1 - sampled), 1);
