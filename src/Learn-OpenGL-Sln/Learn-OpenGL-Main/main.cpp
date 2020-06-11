@@ -197,7 +197,7 @@ int main()
 	glEnableVertexAttribArray(0);
 
 	// normals attribute
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	// clean
@@ -263,15 +263,15 @@ int main()
 
 	camera = new Camera(glm::vec3(0, 0, 3));
 
-	Shader unlit("shaders/unlit.vert", "shaders/unlit.frag");
+	//Shader unlit("shaders/unlit.vert", "shaders/unlit.frag");
 
 	//const unsigned int cubeTextureID = loadTexture("assets/textures/marble.jpg");
 	const unsigned int cubeTextureID = loadTexture("assets/textures/container.jpg");
 	const unsigned int floorTextureID = loadTexture("assets/textures/metal.png");
 	const unsigned int transparentTextureID = loadTexture("assets/textures/window.png");
 
-	unlit.use();
-	unlit.set("textureSampler", 0);
+	//unlit.use();
+	//unlit.set("textureSampler", 0);
 
 	std::vector<std::string> textureFaces
 	{
@@ -348,12 +348,16 @@ int main()
 
 	Model backpack("assets/objects/backpack/backpack.obj");
 
-	Shader skyboxShader("shaders/skybox");
-	//Shader reflectiveShader("shaders/reflective");
+	const Shader skyboxShader("shaders/skybox");
+	const Shader reflectiveShader("shaders/reflective");
 	//Shader refractiveShader("shaders/refractive");
 
 	skyboxShader.use();
 	skyboxShader.set("cubemap", 0);
+
+	const Shader& shader = reflectiveShader;
+	shader.use();
+	shader.set("cubemap", 0);
 
 	// Program Loop (Render Loop)
 	while (!glfwWindowShouldClose(window))
@@ -367,13 +371,13 @@ int main()
 		projection = glm::perspective(glm::radians(camera->fov),
 			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
-		// farther objects are sorted to the back
-		std::map<float, glm::vec3> sortedTransparency;
-		for (auto transparentObjectsPosition : transparentObjectsPositions)
-		{
-			const float distance = glm::distance(camera->position, transparentObjectsPosition);
-			sortedTransparency[distance] = transparentObjectsPosition;
-		}
+		//// farther objects are sorted to the back
+		//std::map<float, glm::vec3> sortedTransparency;
+		//for (auto transparentObjectsPosition : transparentObjectsPositions)
+		//{
+		//	const float distance = glm::distance(camera->position, transparentObjectsPosition);
+		//	sortedTransparency[distance] = transparentObjectsPosition;
+		//}
 
 		process_input(window);
 
@@ -381,46 +385,55 @@ int main()
 		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		unlit.use();
-		unlit.set("view", view);
-		unlit.set("projection", projection);
-		
-		glBindVertexArray(planeVAO);
-		glBindTexture(GL_TEXTURE_2D, floorTextureID);
+		//unlit.use();
+		//unlit.set("view", view);
+		//unlit.set("projection", projection);
+		shader.use();
+		shader.set("view", view);
+		shader.set("projection", projection);
+		shader.set("cameraPosition", camera->position);
 
-		unlit.use();
-		unlit.set("model", identity);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
+		//glBindVertexArray(planeVAO);
+		//glBindTexture(GL_TEXTURE_2D, floorTextureID);
+		//glBindTexture(GL_TEXTURE_2D, cubemapTextureID);
+
+		//unlit.use();
+		//unlit.set("model", identity);
+		shader.use();
+		shader.set("model", identity);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glBindVertexArray(0);
 
 		glBindVertexArray(cubeVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, cubeTextureID);
+		//glBindTexture(GL_TEXTURE_2D, cubeTextureID);
 
-		unlit.use();
-		unlit.set("model", identity);
+		//unlit.set("model", identity);
+		shader.set("model", identity);
+		glBindTexture(GL_TEXTURE_2D, cubemapTextureID);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		unlit.use();
-		model = glm::translate(identity, glm::vec3(-1, 0, -1));
-		unlit.set("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//model = glm::translate(identity, glm::vec3(-1, 0, -1));
+		////unlit.set("model", model);
+		//shader.set("model", model);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		model = glm::translate(identity, glm::vec3(2, 0, 0));
-		unlit.set("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//model = glm::translate(identity, glm::vec3(2, 0, 0));
+		////unlit.set("model", model);
+		//shader.set("model", model);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		glBindVertexArray(transparentVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, transparentTextureID);
+		//glBindVertexArray(transparentVAO);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, transparentTextureID);
 
-		unlit.use();
-		for (auto it = sortedTransparency.rbegin(); it != sortedTransparency.rend(); ++it)
-		{
-			model = glm::translate(identity, it->second);
-			unlit.set("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		}
+		//unlit.use();
+		//for (auto it = sortedTransparency.rbegin(); it != sortedTransparency.rend(); ++it)
+		//{
+		//	model = glm::translate(identity, it->second);
+		//	unlit.set("model", model);
+		//	glDrawArrays(GL_TRIANGLES, 0, 6);
+		//}
 
 		glDepthFunc(GL_LEQUAL);
 
