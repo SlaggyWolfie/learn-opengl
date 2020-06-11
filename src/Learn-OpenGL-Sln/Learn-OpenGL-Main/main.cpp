@@ -350,12 +350,12 @@ int main()
 
 	const Shader skyboxShader("shaders/skybox");
 	const Shader reflectiveShader("shaders/reflective");
-	//Shader refractiveShader("shaders/refractive");
+	const Shader refractiveShader("shaders/refractive");
 
 	skyboxShader.use();
 	skyboxShader.set("cubemap", 0);
 
-	const Shader& shader = reflectiveShader;
+	const Shader& shader = refractiveShader;
 	shader.use();
 	shader.set("cubemap", 0);
 
