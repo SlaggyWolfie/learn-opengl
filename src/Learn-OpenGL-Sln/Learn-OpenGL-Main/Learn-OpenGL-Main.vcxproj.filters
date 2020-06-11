@@ -45,6 +45,9 @@
     <ClCompile Include="main_stencil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_rear_view_stenciling.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.hpp">
@@ -96,5 +99,11 @@
     <None Include="shaders\unlitTransparent.vert" />
     <None Include="shaders\screen.frag" />
     <None Include="shaders\screen.vert" />
+    <None Include="shaders\skybox.vert" />
+    <None Include="shaders\reflective.frag" />
+    <None Include="shaders\reflective.vert" />
+    <None Include="shaders\refractive.frag" />
+    <None Include="shaders\refractive.vert" />
+    <None Include="shaders\skybox.frag" />
   </ItemGroup>
 </Project>

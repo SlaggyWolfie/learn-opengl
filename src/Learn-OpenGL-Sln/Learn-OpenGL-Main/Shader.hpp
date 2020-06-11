@@ -11,6 +11,7 @@ public:
 	unsigned int id;
 
 	Shader(const std::string& vertexPath, const std::string& fragmentPath);
+	Shader(const std::string& path);
 	~Shader();
 
 	void use() const;

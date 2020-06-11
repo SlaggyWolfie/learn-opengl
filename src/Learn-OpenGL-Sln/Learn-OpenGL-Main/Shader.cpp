@@ -13,6 +13,14 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 	id = compileAndLink(vCode, fCode);
 }
 
+Shader::Shader(const std::string& path) :
+	Shader
+	(
+		std::string(path).append(".vert"),
+		std::string(path).append(".frag")
+	)
+{ }
+
 Shader::~Shader()
 {
 	glDeleteProgram(id);
