@@ -76,7 +76,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\..\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\include;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>..\..\..\lib\debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\..\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);..\..\..\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\..\lib\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -147,26 +147,35 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="programs\BackpackModelProgram.cpp" />
+    <ClCompile Include="engine\Camera.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="main_backpack.cpp" />
-    <ClCompile Include="main_rear_view_stenciling.cpp" />
-    <ClCompile Include="main_stencil.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="main_hello_triangle.cpp" />
+    <ClCompile Include="programs\UniformBufferProgram.cpp" />
+    <ClInclude Include="programs\BackpackModelProgram.hpp" />
+    <ClCompile Include="programs\RearViewStencilingProgram.cpp" />
+    <ClCompile Include="programs\StencilProgram.cpp" />
+    <ClCompile Include="engine\Mesh.cpp" />
+    <ClCompile Include="engine\Model.cpp" />
+    <ClCompile Include="engine\Shader.cpp" />
+    <ClCompile Include="programs\HelloTriangleProgram.cpp" />
+    <ClCompile Include="programs\SkyboxProgram.cpp" />
     <ClCompile Include="stb_image.cpp" />
+    <ClInclude Include="programs\UniformBufferProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.hpp" />
-    <ClInclude Include="LightAttenuationTerms.hpp" />
-    <ClInclude Include="Mesh.hpp" />
-    <ClInclude Include="Model.hpp" />
+    <ClInclude Include="engine\Camera.hpp" />
+    <ClInclude Include="helpers\LightAttenuationTerms.hpp" />
+    <ClInclude Include="engine\Mesh.hpp" />
+    <ClInclude Include="engine\Model.hpp" />
+    <ClInclude Include="programs\Program.hpp" />
+    <ClInclude Include="programs\HelloTriangleProgram.hpp" />
+    <ClInclude Include="programs\RearViewStencilingProgram.hpp" />
+    <ClInclude Include="programs\StencilProgram.hpp" />
     <ClInclude Include="Range.hpp" />
-    <ClInclude Include="Shader.hpp" />
-    <ClInclude Include="BasicMaterialLibrary.hpp" />
+    <ClInclude Include="engine\Shader.hpp" />
+    <ClInclude Include="helpers\BasicMaterialLibrary.hpp" />
+    <ClInclude Include="programs\SkyboxProgram.hpp" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +204,11 @@
     <None Include="shaders\screen.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
+    <None Include="shaders\ubo.vert" />
+    <None Include="shaders\ubo_blue.frag" />
+    <None Include="shaders\ubo_green.frag" />
+    <None Include="shaders\ubo_red.frag" />
+    <None Include="shaders\ubo_yellow.frag" />
     <None Include="shaders\unlit.frag" />
     <None Include="shaders\unlit.vert" />
     <None Include="shaders\unlitTransparent.frag" />

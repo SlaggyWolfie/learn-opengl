@@ -1,3 +1,4 @@
+#pragma once
 #ifndef BASIC_MATERIAL_LIBRARY_HPP
 #define BASIC_MATERIAL_LIBRARY_HPP
 

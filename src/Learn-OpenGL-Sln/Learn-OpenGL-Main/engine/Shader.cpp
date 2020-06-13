@@ -1,9 +1,10 @@
 ﻿#include "Shader.hpp"
 
-#include <glad/glad.h>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+
+#include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)

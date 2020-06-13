@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LIGHT_ATTENUATION_TERMS_HPP
 #define LIGHT_ATTENUATION_TERMS_HPP
 
