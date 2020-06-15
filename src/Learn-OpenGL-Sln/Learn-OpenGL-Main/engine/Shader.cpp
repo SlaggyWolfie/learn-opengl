@@ -13,7 +13,7 @@ std::map<Shader::ShaderType, Shader::ShaderTypeInfo> Shader::_shaderTypes =
 	{ShaderType::GEOMETRY, {"GEOMETRY", GL_GEOMETRY_SHADER}}
 };
 
-std::map<unsigned, unsigned> Shader::_counterGLid;
+std::map<unsigned, unsigned> Shader::_idCounter;
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 {
@@ -60,40 +60,34 @@ Shader::~Shader()
 	decrementCounter();
 }
 
-void Shader::reassignID(const Shader* other)
+void Shader::idReassign(const Shader& other)
 {
 	decrementCounter();
-	id = other->id;
+	id = other.id;
 	incrementCounter();
 }
 
 Shader::Shader(const Shader& other)
 {
-	reassignID(&other);
+	idReassign(other);
 }
 
 Shader::Shader(Shader&& other) noexcept
 {
-	reassignID(&other);
-}
-
-Shader& Shader::operator=(Shader other)
-{
-	reassignID(&other);
-	return *this;
+	idReassign(other);
 }
 
 Shader& Shader::operator=(const Shader& other)
 {
 	if (this == &other) return *this;
 
-	reassignID(&other);
+	idReassign(other);
 	return *this;
 }
 
 Shader& Shader::operator=(Shader&& other) noexcept
 {
-	reassignID(&other);
+	idReassign(other);
 	return *this;
 }
 
@@ -239,12 +233,12 @@ unsigned Shader::location(const std::string& name) const
 
 void Shader::incrementCounter() const
 {
-	_counterGLid[id]++;
+	_idCounter[id]++;
 }
 
 void Shader::decrementCounter() const
 {
-	_counterGLid[id]--;
-	if (_counterGLid[id] == 0)
+	_idCounter[id]--;
+	if (_idCounter[id] == 0)
 		glDeleteProgram(id);
 }

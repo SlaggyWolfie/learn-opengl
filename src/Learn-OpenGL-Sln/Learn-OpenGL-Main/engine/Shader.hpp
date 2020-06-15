@@ -25,12 +25,10 @@ public:
 	Shader(const std::string& vertexPath, const std::string& geometryPath, const std::string& fragmentPath);
 	explicit Shader(const std::string& path);
 	~Shader();
-	void reassignID(const Shader* other);
 
 	Shader(const Shader& other);
 	Shader(Shader&& other) noexcept;
 
-	Shader& operator= (Shader other);
 	Shader& operator= (const Shader& other);
 	Shader& operator= (Shader&& other) noexcept;
 
@@ -48,9 +46,11 @@ public:
 	
 private:
 	static std::map<ShaderType, ShaderTypeInfo> _shaderTypes;
-	static std::map<unsigned int, unsigned int> _counterGLid;
+	
+	static std::map<unsigned int, unsigned int> _idCounter;
 	void incrementCounter() const;
 	void decrementCounter() const;
+	void idReassign(const Shader& other);
 	
 	unsigned int location(const std::string& name) const;
 	
