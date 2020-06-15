@@ -40,7 +40,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& geometryPath, c
 
 	const unsigned int vID = compile(vCode, ShaderType::VERTEX);
 	const unsigned int fID = compile(fCode, ShaderType::FRAGMENT);
-	const unsigned int gID = compile(fCode, ShaderType::GEOMETRY);
+	const unsigned int gID = compile(gCode, ShaderType::GEOMETRY);
 
 	id = link({ vID, fID, gID });
 

@@ -94,10 +94,10 @@ int GeometryShaderProgram::run()
 
 	const float points[] =
 	{
-		-0.5f,  0.5f, // top-left
-		 0.5f,  0.5f, // top-right
-		 0.5f, -0.5f, // bottom-right
-		-0.5f, -0.5f  // bottom-left
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // top-left
+		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // top-right
+		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom-right
+		-0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // bottom-left
 	};
 
 	unsigned int pointsVAO, pointsVBO;
@@ -109,12 +109,15 @@ int GeometryShaderProgram::run()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	const Shader shader("shaders/geometry");
+	const Shader shader("shaders/geometry.vert", "shaders/geometry.geom", "shaders/geometry.frag");
 	shader.use();
 
 	// Program Loop (Render Loop)
