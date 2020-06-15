@@ -1,6 +1,6 @@
 #pragma once
-#ifndef UNIFORM_BUFFER_PROGRAM_HPP
-#define UNIFORM_BUFFER_PROGRAM_HPP
+#ifndef EMPTY_PROGRAM_HPP
+#define EMPTY_PROGRAM_HPP
 #include "Program.hpp"
 
 #include <string>
@@ -16,7 +16,7 @@
 
 class Camera;
 
-class UniformBufferProgram : public Program
+class EmptyProgram : public Program
 {
 public:
 	using color = glm::vec3;
@@ -68,4 +68,4 @@ public:
 
 	int run() override;
 };
-#endif UNIFORM_BUFFER_PROGRAM_HPP
+#endif EMPTY_PROGRAM_HPP

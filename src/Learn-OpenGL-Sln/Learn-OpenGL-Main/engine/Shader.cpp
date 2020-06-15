@@ -4,14 +4,47 @@
 #include <sstream>
 #include <iostream>
 
-#include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+
+std::map<Shader::ShaderType, Shader::ShaderTypeInfo> Shader::_shaderTypes =
+{
+	{ShaderType::VERTEX, {"VERTEX", GL_VERTEX_SHADER}},
+	{ShaderType::FRAGMENT, {"FRAGMENT", GL_FRAGMENT_SHADER}},
+	{ShaderType::GEOMETRY, {"GEOMETRY", GL_GEOMETRY_SHADER}}
+};
+
+std::map<unsigned, unsigned> Shader::_counterGLid;
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 {
 	std::string vCode, fCode;
-	read(vertexPath, fragmentPath, vCode, fCode);
-	id = compileAndLink(vCode, fCode);
+
+	read(vertexPath, vCode);
+	read(fragmentPath, fCode);
+
+	const unsigned int vID = compile(vCode, ShaderType::VERTEX);
+	const unsigned int fID = compile(fCode, ShaderType::FRAGMENT);
+
+	id = link({ vID, fID });
+	
+	incrementCounter();
+}
+
+Shader::Shader(const std::string& vertexPath, const std::string& geometryPath, const std::string& fragmentPath)
+{
+	std::string vCode, fCode, gCode;
+
+	read(vertexPath, vCode);
+	read(fragmentPath, fCode);
+	read(geometryPath, gCode);
+
+	const unsigned int vID = compile(vCode, ShaderType::VERTEX);
+	const unsigned int fID = compile(fCode, ShaderType::FRAGMENT);
+	const unsigned int gID = compile(fCode, ShaderType::GEOMETRY);
+
+	id = link({ vID, fID, gID });
+
+	decrementCounter();
 }
 
 Shader::Shader(const std::string& path) :
@@ -24,16 +57,52 @@ Shader::Shader(const std::string& path) :
 
 Shader::~Shader()
 {
-	glDeleteProgram(id);
+	decrementCounter();
 }
 
-void Shader::read(const std::string& vertexPath, const std::string& fragmentPath, std::string& vCode, std::string& fCode)
+void Shader::reassignID(const Shader* other)
 {
-	std::ifstream vFile, fFile;
+	decrementCounter();
+	id = other->id;
+	incrementCounter();
+}
+
+Shader::Shader(const Shader& other)
+{
+	reassignID(&other);
+}
+
+Shader::Shader(Shader&& other) noexcept
+{
+	reassignID(&other);
+}
+
+Shader& Shader::operator=(Shader other)
+{
+	reassignID(&other);
+	return *this;
+}
+
+Shader& Shader::operator=(const Shader& other)
+{
+	if (this == &other) return *this;
+
+	reassignID(&other);
+	return *this;
+}
+
+Shader& Shader::operator=(Shader&& other) noexcept
+{
+	reassignID(&other);
+	return *this;
+}
+
+void Shader::read(const std::string& path, std::string& code)
+{
+	std::ifstream file;
 
 	// > ensure ifstream objects can throw exceptions
-	vFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	fFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
 	//-----OPEN & READ-----//
 	// Try to open and read the shader files
@@ -42,23 +111,19 @@ void Shader::read(const std::string& vertexPath, const std::string& fragmentPath
 	try
 	{
 		// opening the files
-		vFile.open(vertexPath);
-		fFile.open(fragmentPath);
+		file.open(path);
 
 		// setting up streams (reading pipelines ?)
-		std::stringstream vStream, fStream;
+		std::stringstream stream;
 
 		// > read file's buffer contents into the stream
-		vStream << vFile.rdbuf();
-		fStream << fFile.rdbuf();
+		stream << file.rdbuf();
 
 		// close
-		vFile.close();
-		fFile.close();
+		file.close();
 
 		// place into memory
-		vCode = vStream.str();
-		fCode = fStream.str();
+		code = stream.str();
 	}
 	catch (std::ifstream::failure& exception)
 	{
@@ -68,58 +133,53 @@ void Shader::read(const std::string& vertexPath, const std::string& fragmentPath
 	}
 }
 
-unsigned int Shader::compileAndLink(const std::string& vCode, const std::string& fCode)
+unsigned Shader::compile(const std::string& code, const ShaderType shaderType)
 {
-	const char* vCode_c = vCode.c_str();
-	const char* fCode_c = fCode.c_str();
+	const char* code_c = code.c_str();
+	const ShaderTypeInfo& info = _shaderTypes[shaderType];
 
 	//-----COMPILE & LINK-----//
-	unsigned int vID = 0;
-	unsigned int fID = 0;
+	unsigned int id = 0;
 	int success = -1;
-	char infoLog[512];
+	char log[512];
 
 	// Vertex Shader
-	vID = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vID, 1, &vCode_c, nullptr);
-	glCompileShader(vID);
+	id = glCreateShader(info.glID);
+	glShaderSource(id, 1, &code_c, nullptr);
+	glCompileShader(id);
 
 	// print compilation errors
-	glGetShaderiv(vID, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(id, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
-		glGetShaderInfoLog(vID, 512, nullptr, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		glGetShaderInfoLog(id, 512, nullptr, log);
+		std::cout << "ERROR::SHADER::" << info.name << "::COMPILATION_FAILED\n" << log << std::endl;
 	}
 
-	// Fragment Shader
-	fID = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fID, 1, &fCode_c, nullptr);
-	glCompileShader(fID);
+	return id;
+}
 
-	glGetShaderiv(fID, GL_COMPILE_STATUS, &success);
+unsigned Shader::link(const std::vector<unsigned>& shaderIds)
+{
+	int success = -1;
+	char log[512];
+
+	const unsigned int programID = glCreateProgram();
+
+	for (unsigned id : shaderIds) glAttachShader(programID, id);
+
+	glLinkProgram(programID);
+
+	glGetProgramiv(programID, GL_LINK_STATUS, &success);
 	if (!success)
 	{
-		glGetShaderInfoLog(fID, 512, nullptr, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		glGetProgramInfoLog(programID, 512, nullptr, log);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << log << std::endl;
 	}
 
-	const unsigned int ID = glCreateProgram();
-	glAttachShader(ID, vID);
-	glAttachShader(ID, fID);
-	glLinkProgram(ID);
+	for (unsigned id : shaderIds) glDeleteShader(id);
 
-	glGetProgramiv(ID, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(ID, 512, nullptr, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
-
-	glDeleteShader(vID);
-	glDeleteShader(fID);
-
-	return ID;
+	return programID;
 }
 
 void Shader::use() const
@@ -175,4 +235,16 @@ void Shader::set(const std::string& name, const glm::mat4& value) const
 unsigned Shader::location(const std::string& name) const
 {
 	return glGetUniformLocation(id, name.c_str());
+}
+
+void Shader::incrementCounter() const
+{
+	_counterGLid[id]++;
+}
+
+void Shader::decrementCounter() const
+{
+	_counterGLid[id]--;
+	if (_counterGLid[id] == 0)
+		glDeleteProgram(id);
 }

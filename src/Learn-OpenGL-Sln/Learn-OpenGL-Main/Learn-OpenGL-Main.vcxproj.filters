@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,6 +49,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="programs\UniformBufferProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="programs\EmptyProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="programs\GeometryShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,10 +101,16 @@
     <ClInclude Include="programs\SkyboxProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="helpers\Range.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="programs\UniformBufferProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="helpers\Range.hpp">
+    <ClInclude Include="programs\EmptyProgram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="programs\GeometryShaderProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -137,5 +149,8 @@
     <None Include="shaders\ubo_green.frag" />
     <None Include="shaders\ubo_red.frag" />
     <None Include="shaders\ubo_yellow.frag" />
+    <None Include="shaders\geometry.frag" />
+    <None Include="shaders\geometry.vert" />
+    <None Include="shaders\geometry.geom" />
   </ItemGroup>
 </Project>

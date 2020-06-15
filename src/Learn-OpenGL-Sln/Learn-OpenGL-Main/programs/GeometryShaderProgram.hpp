@@ -1,6 +1,6 @@
 #pragma once
-#ifndef UNIFORM_BUFFER_PROGRAM_HPP
-#define UNIFORM_BUFFER_PROGRAM_HPP
+#ifndef GEOMETRY_SHADER_PROGRAM_HPP
+#define GEOMETRY_SHADER_PROGRAM_HPP
 #include "Program.hpp"
 
 #include <string>
@@ -16,7 +16,7 @@
 
 class Camera;
 
-class UniformBufferProgram : public Program
+class GeometryShaderProgram : public Program
 {
 public:
 	using color = glm::vec3;
@@ -27,7 +27,7 @@ public:
 	const int INITIAL_SCREEN_HEIGHT = 600;
 
 	// green-ish color
-	const color4 _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
+	const color4 _defaultClearColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 	color4 _clearColor = _defaultClearColor;
 
 	float mix_ratio = 0.2f;
@@ -68,4 +68,4 @@ public:
 
 	int run() override;
 };
-#endif UNIFORM_BUFFER_PROGRAM_HPP
+#endif GEOMETRY_SHADER_PROGRAM_HPP

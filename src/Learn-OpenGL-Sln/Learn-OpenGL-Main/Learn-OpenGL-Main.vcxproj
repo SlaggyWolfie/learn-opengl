@@ -147,11 +147,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="programs\BackpackModelProgram.cpp" />
     <ClCompile Include="engine\Camera.cpp" />
     <ClCompile Include="glad.c" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="programs\GeometryShaderProgram.cpp" />
     <ClCompile Include="programs\UniformBufferProgram.cpp" />
+    <ClCompile Include="programs\EmptyProgram.cpp" />
     <ClInclude Include="programs\BackpackModelProgram.hpp" />
     <ClCompile Include="programs\RearViewStencilingProgram.cpp" />
     <ClCompile Include="programs\StencilProgram.cpp" />
@@ -161,7 +163,6 @@
     <ClCompile Include="programs\HelloTriangleProgram.cpp" />
     <ClCompile Include="programs\SkyboxProgram.cpp" />
     <ClCompile Include="stb_image.cpp" />
-    <ClInclude Include="programs\UniformBufferProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\Camera.hpp" />
@@ -177,6 +178,9 @@
     <ClInclude Include="helpers\BasicMaterialLibrary.hpp" />
     <ClInclude Include="programs\SkyboxProgram.hpp" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="programs\GeometryShaderProgram.hpp" />
+    <ClInclude Include="programs\UniformBufferProgram.hpp" />
+    <ClInclude Include="programs\EmptyProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\depth.frag" />
@@ -213,6 +217,9 @@
     <None Include="shaders\unlit.vert" />
     <None Include="shaders\unlitTransparent.frag" />
     <None Include="shaders\unlitTransparent.vert" />
+    <None Include="shaders\geometry.frag" />
+    <None Include="shaders\geometry.vert" />
+    <None Include="shaders\geometry.geom" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
