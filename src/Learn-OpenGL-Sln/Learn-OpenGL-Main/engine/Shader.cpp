@@ -44,7 +44,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& geometryPath, c
 
 	id = link({ vID, fID, gID });
 
-	decrementCounter();
+	incrementCounter();
 }
 
 Shader::Shader(const std::string& path) :
