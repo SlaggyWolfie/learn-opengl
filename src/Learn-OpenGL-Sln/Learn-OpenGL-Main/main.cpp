@@ -1,12 +1,10 @@
-#include "programs/GeometryShaderProgram.hpp"
-#include "programs/UniformBufferProgram.hpp"
+#include "programs/ExplodingModelProgram.hpp"
 
 int main(int argc, char* argv[])
 {
 	Program* program = nullptr;
 	
-	program = new GeometryShaderProgram();
-	//program = new UniformBufferProgram();
+	program = new ExplodingModelProgram();
 	
 	const int result = program->run();
 	delete program;

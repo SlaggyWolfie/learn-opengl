@@ -9,7 +9,6 @@ in VS_OUT
 
 out vec3 geometryColor;
 
-// known as a pass-through shader
 void buildHouse(vec4 position)
 {
 	geometryColor = gs_in[0].color; // > gs_in[0] since there's only one input vertex

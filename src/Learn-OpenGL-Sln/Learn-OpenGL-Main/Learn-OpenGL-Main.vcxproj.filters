@@ -54,10 +54,13 @@
     <ClCompile Include="programs\EmptyProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="programs\GeometryShaderProgram.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="programs\ExplodingModelProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="programs\GeometryShaderProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -110,6 +113,9 @@
     <ClInclude Include="programs\EmptyProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="programs\ExplodingModelProgram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="programs\GeometryShaderProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -152,5 +158,8 @@
     <None Include="shaders\geometry.frag" />
     <None Include="shaders\geometry.vert" />
     <None Include="shaders\geometry.geom" />
+    <None Include="shaders\explodingModel.frag" />
+    <None Include="shaders\explodingModel.geom" />
+    <None Include="shaders\explodingModel.vert" />
   </ItemGroup>
 </Project>
