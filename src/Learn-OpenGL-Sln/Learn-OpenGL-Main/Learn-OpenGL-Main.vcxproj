@@ -172,7 +172,7 @@
     <ClInclude Include="programs\HelloTriangleProgram.hpp" />
     <ClInclude Include="programs\RearViewStencilingProgram.hpp" />
     <ClInclude Include="programs\StencilProgram.hpp" />
-    <ClInclude Include="Range.hpp" />
+    <ClInclude Include="helpers\Range.hpp" />
     <ClInclude Include="engine\Shader.hpp" />
     <ClInclude Include="helpers\BasicMaterialLibrary.hpp" />
     <ClInclude Include="programs\SkyboxProgram.hpp" />

@@ -59,9 +59,6 @@
     <ClInclude Include="stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Range.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="engine\Camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -99,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="programs\UniformBufferProgram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\Range.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
