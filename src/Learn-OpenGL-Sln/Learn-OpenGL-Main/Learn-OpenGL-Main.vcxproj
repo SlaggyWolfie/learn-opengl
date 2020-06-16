@@ -151,10 +151,11 @@
     <ClCompile Include="programs\BackpackModelProgram.cpp" />
     <ClCompile Include="engine\Camera.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="programs\ExplodingModelProgram.cpp" />
     <ClCompile Include="programs\GeometryShaderProgram.cpp" />
     <ClCompile Include="programs\UniformBufferProgram.cpp" />
     <ClCompile Include="programs\EmptyProgram.cpp" />
-    <ClCompile Include="programs\ExplodingModelProgram.cpp" />
+    <ClCompile Include="programs\DisplayNormalsProgram.cpp" />
     <ClInclude Include="programs\BackpackModelProgram.hpp" />
     <ClCompile Include="programs\RearViewStencilingProgram.cpp" />
     <ClCompile Include="programs\StencilProgram.cpp" />
@@ -164,13 +165,14 @@
     <ClCompile Include="programs\HelloTriangleProgram.cpp" />
     <ClCompile Include="programs\SkyboxProgram.cpp" />
     <ClCompile Include="stb_image.cpp" />
-    <ClInclude Include="programs\ExplodingModelProgram.hpp" />
+    <ClInclude Include="programs\DisplayNormalsProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\Camera.hpp" />
     <ClInclude Include="helpers\LightAttenuationTerms.hpp" />
     <ClInclude Include="engine\Mesh.hpp" />
     <ClInclude Include="engine\Model.hpp" />
+    <ClInclude Include="programs\ExplodingModelProgram.hpp" />
     <ClInclude Include="programs\GeometryShaderProgram.hpp" />
     <ClInclude Include="programs\Program.hpp" />
     <ClInclude Include="programs\HelloTriangleProgram.hpp" />
@@ -225,6 +227,9 @@
     <None Include="shaders\explodingModel.frag" />
     <None Include="shaders\explodingModel.geom" />
     <None Include="shaders\explodingModel.vert" />
+    <None Include="shaders\displayNormals.frag" />
+    <None Include="shaders\displayNormals.geom" />
+    <None Include="shaders\displayNormals.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
