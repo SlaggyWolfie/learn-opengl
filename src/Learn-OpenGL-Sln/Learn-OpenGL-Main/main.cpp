@@ -1,4 +1,5 @@
 #include "programs/DisplayNormalsProgram.hpp"
+#include "programs/InstancingProgram.hpp"
 
 int main(int argc, char* argv[])
 {

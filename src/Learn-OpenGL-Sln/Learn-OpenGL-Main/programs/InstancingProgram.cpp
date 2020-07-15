@@ -14,6 +14,7 @@
 
 int InstancingProgram::run()
 {
+#pragma region init
 	// Initialize GLFW context with OpenGL version 3.3 using the Core OpenGL profile
 	glfwInit();
 
@@ -81,6 +82,7 @@ int InstancingProgram::run()
 	stbi_set_flip_vertically_on_load(1);
 
 	//----- end of setup -----//
+#pragma endregion 
 
 	const glm::mat4 identity(1);
 	glm::mat4 view, projection;
@@ -88,16 +90,48 @@ int InstancingProgram::run()
 
 	camera = new Camera(glm::vec3(0, 0, 5));
 
-	const Shader displayNormalsShader(
-		"shaders/displayNormals.vert",
-		"shaders/displayNormals.geom",
-		"shaders/displayNormals.frag");
+	const float quadVertices[] =
+	{
+		// positions     // colors
+		-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+		 0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+		-0.05f, -0.05f,  0.0f, 0.0f, 1.0f,
 
-	const Shader unlitShader(
-		"shaders/unlit.vert",
-		"shaders/unlit.frag");
+		-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+		 0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+		 0.05f,  0.05f,  0.0f, 1.0f, 1.0f
+	};
 
-	Model backpackModel("assets/objects/backpack/backpack.obj");
+	unsigned vao, vbo;
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+	
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	
+	glm::vec2 translations[100];
+	int index = 0;
+	const float offset = 0.1f;
+	const glm::vec2 offsetV = glm::vec2(offset);
+
+	for (int y = -10; y < 10; y += 2)
+		for (int x = -10; x < 10; x += 2)
+			translations[index++] = glm::vec2(x, y) / 10.0f + offsetV;
+
+	const Shader shader("shaders/instancingColor");
+	shader.use();
+	for (unsigned i = 0; i < 100; ++i)
+		shader.set(string_format("offsets[%d]", i), translations[i]);
 
 	// Program Loop (Render Loop)
 	double lastFrame = glfwGetTime();
@@ -119,19 +153,8 @@ int InstancingProgram::run()
 		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		unlitShader.use();
-		unlitShader.set("view", view);
-		unlitShader.set("projection", projection);
-		unlitShader.set("model", model);
-
-		backpackModel.draw(unlitShader);
-
-		displayNormalsShader.use();
-		displayNormalsShader.set("view", view);
-		displayNormalsShader.set("projection", projection);
-		displayNormalsShader.set("model", model);
-
-		backpackModel.draw(displayNormalsShader);
+		glBindVertexArray(vao);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
 
 		// double buffering, and poll IO events
 		glfwSwapBuffers(window);
@@ -139,6 +162,8 @@ int InstancingProgram::run()
 	}
 
 	// Clean-up!
+	glDeleteVertexArrays(1, &vao);
+	glDeleteBuffers(1, &vbo);
 
 	delete camera;
 
@@ -268,35 +293,4 @@ unsigned int InstancingProgram::loadTexture(const std::string& path)
 	stbi_image_free(data);
 
 	return textureID;
-}
-
-unsigned int InstancingProgram::loadCubemap(const std::vector<std::string>& pathsToTexturesFaces)
-{
-	unsigned int cubemapTextureID = 0;
-	glGenTextures(1, &cubemapTextureID);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTextureID);
-
-	int width, height;
-
-	for (unsigned int i = 0; i < pathsToTexturesFaces.size(); ++i)
-	{
-		unsigned char* data = stbi_load(pathsToTexturesFaces[i].c_str(),
-			&width, &height, nullptr, 0); // let's see if this crashes eventually
-
-		if (data)
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB,
-				width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		else
-			std::cout << "Cubemap texture failed to load at path: " << pathsToTexturesFaces[i] << std::endl;
-
-		stbi_image_free(data);
-	}
-
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	return cubemapTextureID;
 }

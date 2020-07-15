@@ -47,7 +47,6 @@ public:
 	static void matrix_cofactor(const float src[16], float dst[16]);
 
 	static unsigned int loadTexture(const std::string& path);
-	static unsigned int loadCubemap(const std::vector<std::string>& pathsToTexturesFaces);
 
 	// https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 	template<typename ... Args>
