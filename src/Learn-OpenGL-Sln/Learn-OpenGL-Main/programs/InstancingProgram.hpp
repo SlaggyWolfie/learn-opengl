@@ -19,7 +19,7 @@ class Camera;
 class InstancingProgram : public Program
 {
 public:
-	const int INIT_ERROR = -1;
+	const int INIT_ERROR = -17;
 	const int INITIAL_SCREEN_WIDTH = 800;
 	const int INITIAL_SCREEN_HEIGHT = 600;
 

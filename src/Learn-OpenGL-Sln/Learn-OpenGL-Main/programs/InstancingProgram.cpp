@@ -101,23 +101,6 @@ int InstancingProgram::run()
 		 0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
 		 0.05f,  0.05f,  0.0f, 1.0f, 1.0f
 	};
-
-	unsigned vao, vbo;
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-
-	glBindVertexArray(vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-	
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 	
 	glm::vec2 translations[100];
 	int index = 0;
@@ -128,10 +111,39 @@ int InstancingProgram::run()
 		for (int x = -10; x < 10; x += 2)
 			translations[index++] = glm::vec2(x, y) / 10.0f + offsetV;
 
+	unsigned instanceVBO;
+	glGenBuffers(1, &instanceVBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	unsigned vao, vbo;
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+	
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribDivisor(2, 1);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 	const Shader shader("shaders/instancingColor");
-	shader.use();
-	for (unsigned i = 0; i < 100; ++i)
-		shader.set(string_format("offsets[%d]", i), translations[i]);
+	//for (unsigned i = 0; i < 100; ++i)
+	//	shader.set(string_format("offsets[%d]", i), translations[i]);
 
 	// Program Loop (Render Loop)
 	double lastFrame = glfwGetTime();
@@ -146,15 +158,16 @@ int InstancingProgram::run()
 		projection = glm::perspective(glm::radians(camera->fov),
 			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 100.0f);
 
-
 		process_input(window);
 
 		// rendering
 		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		shader.use();
 		glBindVertexArray(vao);
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+		glBindVertexArray(0);
 
 		// double buffering, and poll IO events
 		glfwSwapBuffers(window);
@@ -164,6 +177,7 @@ int InstancingProgram::run()
 	// Clean-up!
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &instanceVBO);
 
 	delete camera;
 
