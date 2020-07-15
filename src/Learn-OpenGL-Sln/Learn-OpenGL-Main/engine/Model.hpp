@@ -15,7 +15,10 @@ public:
 	Model(const std::string& path);
 	~Model();
 	void draw(const Shader& shader) const;
-	
+
+	const std::vector<Mesh>& meshes() const;
+	const std::vector<Mesh::Texture>& texturesLoaded() const;
+
 private:
 	std::vector<Mesh> _meshes;
 	std::string _directory;

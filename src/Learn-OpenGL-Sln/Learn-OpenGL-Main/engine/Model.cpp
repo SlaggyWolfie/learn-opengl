@@ -23,6 +23,16 @@ void Model::draw(const Shader& shader) const
 	for (auto& mesh : _meshes) mesh.draw(shader);
 }
 
+const std::vector<Mesh>& Model::meshes() const
+{
+	return _meshes;
+}
+
+const std::vector<Mesh::Texture>& Model::texturesLoaded() const
+{
+	return _texturesLoaded;
+}
+
 void Model::loadModel(const std::string& path)
 {
 	Assimp::Importer importer;

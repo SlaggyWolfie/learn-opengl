@@ -88,17 +88,19 @@ int AsteroidFieldProgram::run()
 	glm::mat4 view, projection;
 	glm::mat4 model = view = projection = identity;
 
-	camera = new Camera(glm::vec3(0, 0, 64));
+	camera = new Camera(glm::vec3(5, 5, 500));
 
-	const unsigned amount = 1000;
+	const unsigned amount = 500000;
 	const auto modelMatrices = new glm::mat4[amount];
 	srand(static_cast<unsigned>(glfwGetTime()));
-	const float radius = 50;
-	const float offset = 2.5f;
+	const float radius = 300;
+	const float offset = 25.0f;
 
 	for (unsigned i = 0; i < amount; ++i)
-	{		
+	{
 		glm::mat4 model = identity;
+		
+		model = glm::rotate(model, 20.0f / 360.0f * glm::pi<float>(), glm::vec3(1, 0, 0));
 
 		// > 1. translation: displace along circle with 'radius' in range [-offset, offset]
 		const float angle = static_cast<float>(i) / amount * 360.0f;
@@ -120,22 +122,40 @@ int AsteroidFieldProgram::run()
 
 		// > 4. now add to list of matrices
 		modelMatrices[i] = model;
-	}	
-
-	//unsigned instanceVBO;
-	//glGenBuffers(1, &instanceVBO);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	////glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindVertexArray(0);
+	}
 
 	const Model planet("assets/objects/planet/planet.obj");
 	const Model rock("assets/objects/rock/rock.obj");
-	const Shader shader("shaders/unlit2");
-	shader.use();
+
+	unsigned instanceVBO;
+	glGenBuffers(1, &instanceVBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+
+	const auto& meshes = rock.meshes();
+	for (const auto& mesh : meshes)
+	{
+		const unsigned vao = mesh.vao();
+		glBindVertexArray(vao);
+
+		// vertex attributes
+		const auto vec4size = sizeof(glm::vec4);
+
+		for (unsigned j = 3; j < 7; ++j)
+		{
+			glEnableVertexAttribArray(j);
+			glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (void*)((j - 3) * vec4size));
+			glVertexAttribDivisor(j, 1);
+		}
+
+		glBindVertexArray(0);
+	}
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	const Shader planetShader("shaders/unlit2");
+	const Shader rockShader("shaders/unlitInstanced");
 
 	// Program Loop (Render Loop)
 	double lastFrame = glfwGetTime();
@@ -148,11 +168,16 @@ int AsteroidFieldProgram::run()
 		// Pre-input calculations | Critical
 		view = camera->viewMatrix();
 		projection = glm::perspective(glm::radians(camera->fov),
-			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 200.0f);
-
-		shader.set("projection", projection);
-		shader.set("view", view);
+			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 1000.0f);
 		
+		planetShader.use();
+		planetShader.set("projection", projection);
+		planetShader.set("view", view);
+		
+		rockShader.use();
+		rockShader.set("projection", projection);
+		rockShader.set("view", view);
+
 		process_input(window);
 
 		// rendering
@@ -160,16 +185,25 @@ int AsteroidFieldProgram::run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		model = identity;
+		model = glm::rotate(model, 20.0f / 360.0f * glm::pi<float>(), glm::vec3(1, 0, 0));
 		model = glm::translate(model, glm::vec3(0, -3, 0));
-		model = glm::scale(model, glm::vec3(4));
-		
-		shader.set("model", model);
-		planet.draw(shader);
+		model = glm::scale(model, glm::vec3(40));
 
-		for (unsigned i = 0; i < amount; ++i)
+		planetShader.use();
+		planetShader.set("model", model);
+		planet.draw(planetShader);
+
+		rockShader.use();
+
+		rockShader.set("material.texture_diffuse1", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, rock.texturesLoaded()[0].id);
+		
+		for (const auto& mesh : meshes)
 		{
-			shader.set("model", modelMatrices[i]);
-			rock.draw(shader);
+			glBindVertexArray(mesh.vao());
+			glDrawElementsInstanced(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0, amount);
+			glBindVertexArray(0);
 		}
 
 		// double buffering, and poll IO events
@@ -180,7 +214,7 @@ int AsteroidFieldProgram::run()
 	// Clean-up!
 	//glDeleteVertexArrays(1, &vao);
 	//glDeleteBuffers(1, &vbo);
-	//glDeleteBuffers(1, &instanceVBO);
+	glDeleteBuffers(1, &instanceVBO);
 
 	delete camera;
 
