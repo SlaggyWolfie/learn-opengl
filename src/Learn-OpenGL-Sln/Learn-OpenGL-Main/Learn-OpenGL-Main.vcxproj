@@ -151,11 +151,12 @@
     <ClCompile Include="programs\BackpackModelProgram.cpp" />
     <ClCompile Include="engine\Camera.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="programs\DisplayNormalsProgram.cpp" />
     <ClCompile Include="programs\ExplodingModelProgram.cpp" />
     <ClCompile Include="programs\GeometryShaderProgram.cpp" />
     <ClCompile Include="programs\UniformBufferProgram.cpp" />
     <ClCompile Include="programs\EmptyProgram.cpp" />
-    <ClCompile Include="programs\DisplayNormalsProgram.cpp" />
+    <ClCompile Include="programs\InstancingProgram.cpp" />
     <ClInclude Include="programs\BackpackModelProgram.hpp" />
     <ClCompile Include="programs\RearViewStencilingProgram.cpp" />
     <ClCompile Include="programs\StencilProgram.cpp" />
@@ -166,6 +167,7 @@
     <ClCompile Include="programs\SkyboxProgram.cpp" />
     <ClCompile Include="stb_image.cpp" />
     <ClInclude Include="programs\DisplayNormalsProgram.hpp" />
+    <ClInclude Include="programs\InstancingProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\Camera.hpp" />
@@ -187,8 +189,6 @@
     <ClInclude Include="programs\EmptyProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\depth.frag" />
-    <None Include="shaders\depth.vert" />
     <None Include="shaders\empty.frag" />
     <None Include="shaders\empty.vert" />
     <None Include="shaders\light.frag" />

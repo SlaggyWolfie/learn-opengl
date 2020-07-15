@@ -60,10 +60,13 @@
     <ClCompile Include="programs\GeometryShaderProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="programs\DisplayNormalsProgram.cpp">
+    <ClCompile Include="programs\ExplodingModelProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="programs\ExplodingModelProgram.cpp">
+    <ClCompile Include="programs\InstancingProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="programs\DisplayNormalsProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,10 +122,13 @@
     <ClInclude Include="programs\GeometryShaderProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="programs\DisplayNormalsProgram.hpp">
+    <ClInclude Include="programs\ExplodingModelProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="programs\ExplodingModelProgram.hpp">
+    <ClInclude Include="programs\InstancingProgram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="programs\DisplayNormalsProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -139,8 +145,6 @@
     <None Include="shaders\litPhong.vert" />
     <None Include="shaders\empty.frag" />
     <None Include="shaders\empty.vert" />
-    <None Include="shaders\depth.frag" />
-    <None Include="shaders\depth.vert" />
     <None Include="shaders\outline.frag" />
     <None Include="shaders\mix.frag" />
     <None Include="shaders\mix.vert" />
