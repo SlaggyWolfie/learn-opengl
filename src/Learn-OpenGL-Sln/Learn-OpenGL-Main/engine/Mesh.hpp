@@ -35,7 +35,7 @@ public:
 
 	void draw(const Shader& shader);
 	unsigned int vao() const;
-	void freeGL();
+	void freeGL() const;
 private:
 	unsigned int _vao = 0, _vbo = 0, _ebo = 0;
 	void setup();

@@ -98,7 +98,7 @@ unsigned Mesh::vao() const
 	return _vao;
 }
 
-void Mesh::freeGL()
+void Mesh::freeGL() const
 {
 	glDeleteVertexArrays(1, &_vao);
 	glDeleteBuffers(1, &_vbo);
