@@ -188,49 +188,6 @@
     <ClInclude Include="programs\UniformBufferProgram.hpp" />
     <ClInclude Include="programs\EmptyProgram.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\empty.frag" />
-    <None Include="shaders\empty.vert" />
-    <None Include="shaders\light.frag" />
-    <None Include="shaders\light.vert" />
-    <None Include="shaders\lit.frag" />
-    <None Include="shaders\lit.vert" />
-    <None Include="shaders\litGouraud.frag" />
-    <None Include="shaders\litGouraud.vert" />
-    <None Include="shaders\litPhong.frag" />
-    <None Include="shaders\litPhong.vert" />
-    <None Include="shaders\litPhongViewSpace.frag" />
-    <None Include="shaders\litPhongViewSpace.vert" />
-    <None Include="shaders\outline.frag" />
-    <None Include="shaders\mix.frag" />
-    <None Include="shaders\mix.vert" />
-    <None Include="shaders\reflective.frag" />
-    <None Include="shaders\reflective.vert" />
-    <None Include="shaders\refractive.frag" />
-    <None Include="shaders\refractive.vert" />
-    <None Include="shaders\screen.frag" />
-    <None Include="shaders\screen.vert" />
-    <None Include="shaders\skybox.frag" />
-    <None Include="shaders\skybox.vert" />
-    <None Include="shaders\ubo.vert" />
-    <None Include="shaders\ubo_blue.frag" />
-    <None Include="shaders\ubo_green.frag" />
-    <None Include="shaders\ubo_red.frag" />
-    <None Include="shaders\ubo_yellow.frag" />
-    <None Include="shaders\unlit.frag" />
-    <None Include="shaders\unlit.vert" />
-    <None Include="shaders\unlitTransparent.frag" />
-    <None Include="shaders\unlitTransparent.vert" />
-    <None Include="shaders\geometry.frag" />
-    <None Include="shaders\geometry.vert" />
-    <None Include="shaders\geometry.geom" />
-    <None Include="shaders\explodingModel.frag" />
-    <None Include="shaders\explodingModel.geom" />
-    <None Include="shaders\explodingModel.vert" />
-    <None Include="shaders\displayNormals.frag" />
-    <None Include="shaders\displayNormals.geom" />
-    <None Include="shaders\displayNormals.vert" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
