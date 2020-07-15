@@ -18,7 +18,7 @@ Model::~Model()
 	for (auto& texture : _texturesLoaded) glDeleteTextures(1, &texture.id);
 }
 
-void Model::draw(const Shader& shader)
+void Model::draw(const Shader& shader) const
 {
 	for (auto& mesh : _meshes) mesh.draw(shader);
 }

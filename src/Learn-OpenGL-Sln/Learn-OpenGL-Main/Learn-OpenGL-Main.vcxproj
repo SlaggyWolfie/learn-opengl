@@ -154,9 +154,10 @@
     <ClCompile Include="programs\DisplayNormalsProgram.cpp" />
     <ClCompile Include="programs\ExplodingModelProgram.cpp" />
     <ClCompile Include="programs\GeometryShaderProgram.cpp" />
+    <ClCompile Include="programs\InstancingProgram.cpp" />
     <ClCompile Include="programs\UniformBufferProgram.cpp" />
     <ClCompile Include="programs\EmptyProgram.cpp" />
-    <ClCompile Include="programs\InstancingProgram.cpp" />
+    <ClCompile Include="programs\AsteroidFieldProgram.cpp" />
     <ClInclude Include="programs\BackpackModelProgram.hpp" />
     <ClCompile Include="programs\RearViewStencilingProgram.cpp" />
     <ClCompile Include="programs\StencilProgram.cpp" />
@@ -167,7 +168,7 @@
     <ClCompile Include="programs\SkyboxProgram.cpp" />
     <ClCompile Include="stb_image.cpp" />
     <ClInclude Include="programs\DisplayNormalsProgram.hpp" />
-    <ClInclude Include="programs\InstancingProgram.hpp" />
+    <ClInclude Include="programs\AsteroidFieldProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\Camera.hpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="engine\Model.hpp" />
     <ClInclude Include="programs\ExplodingModelProgram.hpp" />
     <ClInclude Include="programs\GeometryShaderProgram.hpp" />
+    <ClInclude Include="programs\InstancingProgram.hpp" />
     <ClInclude Include="programs\Program.hpp" />
     <ClInclude Include="programs\HelloTriangleProgram.hpp" />
     <ClInclude Include="programs\RearViewStencilingProgram.hpp" />

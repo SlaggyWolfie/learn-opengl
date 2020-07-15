@@ -63,10 +63,13 @@
     <ClCompile Include="programs\ExplodingModelProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="programs\InstancingProgram.cpp">
+    <ClCompile Include="programs\DisplayNormalsProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="programs\DisplayNormalsProgram.cpp">
+    <ClCompile Include="programs\AsteroidFieldProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="programs\InstancingProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -125,10 +128,13 @@
     <ClInclude Include="programs\ExplodingModelProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="programs\InstancingProgram.hpp">
+    <ClInclude Include="programs\DisplayNormalsProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="programs\DisplayNormalsProgram.hpp">
+    <ClInclude Include="programs\AsteroidFieldProgram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="programs\InstancingProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
