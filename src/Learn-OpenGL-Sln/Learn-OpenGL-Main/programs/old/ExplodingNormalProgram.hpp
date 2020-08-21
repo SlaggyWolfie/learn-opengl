@@ -1,35 +1,34 @@
 #pragma once
-#ifndef REAR_VIEW_STENCILING_PROGRAM_HPP
-#define REAR_VIEW_STENCILING_PROGRAM_HPP
+#ifndef EXPLODING_MODEL_PROGRAM_HPP
+#define EXPLODING_MODEL_PROGRAM_HPP
 
-#include "Program.hpp"
+#include <programs/Program.hpp>
 
-#include <iostream>
+#include <string>
+#include <stdexcept>
+#include <memory>
 
 // ReSharper disable once CppUnusedIncludeDirective
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
-
 #include <helpers/LightAttenuationTerms.hpp>
 
 class Camera;
 
-class RearViewStencilingProgram : Program
+class ExplodingNormalProgram : public Program
 {
 public:
 	using color = glm::vec3;
 	using color4 = glm::vec4;
 
 	const int INIT_ERROR = -1;
-	const unsigned int INITIAL_SCREEN_WIDTH = 800;
-	const unsigned int INITIAL_SCREEN_HEIGHT = 600;
-
-	const float INITIAL_FOV = 45;
+	const int INITIAL_SCREEN_WIDTH = 800;
+	const int INITIAL_SCREEN_HEIGHT = 600;
 
 	// green-ish color
-	const color4 _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
+	const color4 _defaultClearColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 	color4 _clearColor = _defaultClearColor;
 
 	float mix_ratio = 0.2f;
@@ -51,11 +50,11 @@ public:
 	void mouse_callback(GLFWwindow*, double x, double y);
 	void scroll_callback(GLFWwindow*, double, double yOffset);
 
-	float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2);
-	void matrix_cofactor(const float src[16], float dst[16]);
-	unsigned int loadTexture(const std::string& path);
+	static float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2);
+	static void matrix_cofactor(const float src[16], float dst[16]);
 
-	int run() override;
+	static unsigned int loadTexture(const std::string& path);
+	static unsigned int loadCubemap(const std::vector<std::string>& pathsToTexturesFaces);
 
 	// https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 	template<typename ... Args>
@@ -67,5 +66,7 @@ public:
 		snprintf(buf.get(), size, format.c_str(), args ...);
 		return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 	}
+
+	int run() override;
 };
-#endif // REAR_VIEW_STENCILING_PROGRAM_HPP
+#endif EXPLODING_MODEL_PROGRAM_HPP

@@ -1,9 +1,9 @@
 #pragma once
-#ifndef STENCIL_PROGRAM_HPP
-#define STENCIL_PROGRAM_HPP
-#include "Program.hpp"
+#ifndef BACKPACK_MODEL_PROGRAM_HPP
+#define BACKPACK_MODEL_PROGRAM_HPP
 
-#include <string>
+#include <programs/Program.hpp>
+
 #include <stdexcept>
 #include <memory>
 
@@ -15,13 +15,15 @@
 
 #include <helpers/LightAttenuationTerms.hpp>
 
+class Shader;
 class Camera;
 
-class StencilProgram : Program
+class BackpackModelProgram : Program
 {
 public:
 	using color = glm::vec3;
 	using color4 = glm::vec4;
+	using uint = unsigned int;
 
 	const int INIT_ERROR = -1;
 	const int INITIAL_SCREEN_WIDTH = 800;
@@ -30,7 +32,7 @@ public:
 	const float INITIAL_FOV = 45;
 
 	// green-ish color
-	const color4 _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
+	const color4 _defaultClearColor = color4(0.2f, 0.3f, 0.3f, 1.0f);
 	color4 _clearColor = _defaultClearColor;
 
 	float mix_ratio = 0.2f;
@@ -54,11 +56,21 @@ public:
 
 	static float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2);
 	static void matrix_cofactor(const float src[16], float dst[16]);
-	static unsigned int loadTexture(const std::string& path);
+	void parse_light_attenuation(const Shader& shader, const std::string& attenuationAddress, const float distance);
+
+	int run() override;
+
+	BackpackModelProgram() = default;
+	~BackpackModelProgram() override;
+
+	BackpackModelProgram(const BackpackModelProgram&) = delete; // copy constructor
+	BackpackModelProgram(const BackpackModelProgram&&) = delete; // move constructor
+	BackpackModelProgram& operator= (const BackpackModelProgram&) = delete; // copy assignment operator
+	BackpackModelProgram& operator= (const BackpackModelProgram&&) = delete; // move assignment operator
 
 	// https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 	template<typename ... Args>
-	std::string string_format(const std::string& format, Args ... args)
+	static std::string string_format(const std::string& format, Args ... args)
 	{
 		const size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
 		if (size <= 0) { throw std::runtime_error("Error during formatting."); }
@@ -66,7 +78,5 @@ public:
 		snprintf(buf.get(), size, format.c_str(), args ...);
 		return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 	}
-
-	int run() override;
 };
-#endif // STENCIL_PROGRAM_HPP
+#endif // BACKPACK_MODEL_PROGRAM_HPP

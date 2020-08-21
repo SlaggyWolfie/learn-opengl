@@ -1,7 +1,8 @@
 #pragma once
-#ifndef GEOMETRY_SHADER_PROGRAM_HPP
-#define GEOMETRY_SHADER_PROGRAM_HPP
-#include "Program.hpp"
+#ifndef STENCIL_PROGRAM_HPP
+#define STENCIL_PROGRAM_HPP
+
+#include <programs/Program.hpp>
 
 #include <string>
 #include <stdexcept>
@@ -12,11 +13,12 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
+
 #include <helpers/LightAttenuationTerms.hpp>
 
 class Camera;
 
-class GeometryShaderProgram : public Program
+class StencilProgram : Program
 {
 public:
 	using color = glm::vec3;
@@ -26,8 +28,10 @@ public:
 	const int INITIAL_SCREEN_WIDTH = 800;
 	const int INITIAL_SCREEN_HEIGHT = 600;
 
+	const float INITIAL_FOV = 45;
+
 	// green-ish color
-	const color4 _defaultClearColor{ 0.1f, 0.1f, 0.1f, 1.0f };
+	const color4 _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
 	color4 _clearColor = _defaultClearColor;
 
 	float mix_ratio = 0.2f;
@@ -51,9 +55,7 @@ public:
 
 	static float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2);
 	static void matrix_cofactor(const float src[16], float dst[16]);
-
 	static unsigned int loadTexture(const std::string& path);
-	static unsigned int loadCubemap(const std::vector<std::string>& pathsToTexturesFaces);
 
 	// https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 	template<typename ... Args>
@@ -68,4 +70,4 @@ public:
 
 	int run() override;
 };
-#endif GEOMETRY_SHADER_PROGRAM_HPP
+#endif // STENCIL_PROGRAM_HPP

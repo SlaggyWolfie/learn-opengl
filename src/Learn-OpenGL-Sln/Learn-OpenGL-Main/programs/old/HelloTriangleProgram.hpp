@@ -2,7 +2,7 @@
 #ifndef HELLO_TRIANGLE_PROGRAM_HPP
 #define HELLO_TRIANGLE_PROGRAM_HPP
 
-#include "Program.hpp"
+#include <programs/Program.hpp>
 
 #include <array>
 

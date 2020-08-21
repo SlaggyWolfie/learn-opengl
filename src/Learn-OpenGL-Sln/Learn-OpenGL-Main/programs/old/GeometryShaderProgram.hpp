@@ -1,7 +1,8 @@
 #pragma once
-#ifndef SKYBOX_PROGRAM_HPP
-#define SKYBOX_PROGRAM_HPP
-#include "Program.hpp"
+#ifndef GEOMETRY_SHADER_PROGRAM_HPP
+#define GEOMETRY_SHADER_PROGRAM_HPP
+
+#include <programs/Program.hpp>
 
 #include <string>
 #include <stdexcept>
@@ -16,18 +17,18 @@
 
 class Camera;
 
-class SkyboxProgram : public Program
+class GeometryShaderProgram : public Program
 {
 public:
 	using color = glm::vec3;
 	using color4 = glm::vec4;
 
 	const int INIT_ERROR = -1;
-	const unsigned int INITIAL_SCREEN_WIDTH = 800;
-	const unsigned int INITIAL_SCREEN_HEIGHT = 600;
+	const int INITIAL_SCREEN_WIDTH = 800;
+	const int INITIAL_SCREEN_HEIGHT = 600;
 
 	// green-ish color
-	const color4 _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
+	const color4 _defaultClearColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 	color4 _clearColor = _defaultClearColor;
 
 	float mix_ratio = 0.2f;
@@ -68,4 +69,4 @@ public:
 
 	int run() override;
 };
-#endif SKYBOX_PROGRAM_HPP
+#endif GEOMETRY_SHADER_PROGRAM_HPP

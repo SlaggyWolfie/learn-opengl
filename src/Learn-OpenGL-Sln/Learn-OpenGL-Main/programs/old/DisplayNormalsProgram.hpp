@@ -1,7 +1,8 @@
 #pragma once
-#ifndef INSTANCING_PROGRAM_HPP
-#define INSTANCING_PROGRAM_HPP
-#include "Program.hpp"
+#ifndef DISPLAY_NORMALS_PROGRAM_HPP
+#define DISPLAY_NORMALS_PROGRAM_HPP
+
+#include <programs/Program.hpp>
 
 #include <string>
 #include <stdexcept>
@@ -16,18 +17,23 @@
 
 class Camera;
 
-class InstancingProgram : public Program
+class DisplayNormalsProgram : public Program
 {
 public:
-	const int INIT_ERROR = -17;
+	using color = glm::vec3;
+	using color4 = glm::vec4;
+
+	const int INIT_ERROR = -1;
 	const int INITIAL_SCREEN_WIDTH = 800;
 	const int INITIAL_SCREEN_HEIGHT = 600;
 
 	// green-ish color
-	const glm::vec4 _defaultClearColor{ 0.1f, 0.1f, 0.1f, 1.0f };
-	glm::vec4 _clearColor = _defaultClearColor;
+	const color4 _defaultClearColor{ 0.1f, 0.1f, 0.1f, 1.0f };
+	color4 _clearColor = _defaultClearColor;
 
-	double deltaTime = 0;
+	float mix_ratio = 0.2f;
+	float deltaTime = 0;
+	float lastFrame = 0;
 	bool firstMouse = true;
 
 	glm::vec2 lastMousePosition = glm::vec2
@@ -37,6 +43,7 @@ public:
 	);
 
 	Camera* camera = nullptr;
+	LightAttenuationTerms light_attenuation_terms;
 
 	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 	void process_input(GLFWwindow* window);
@@ -47,6 +54,7 @@ public:
 	static void matrix_cofactor(const float src[16], float dst[16]);
 
 	static unsigned int loadTexture(const std::string& path);
+	static unsigned int loadCubemap(const std::vector<std::string>& pathsToTexturesFaces);
 
 	// https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 	template<typename ... Args>
@@ -61,4 +69,4 @@ public:
 
 	int run() override;
 };
-#endif
+#endif //DISPLAY_NORMALS_PROGRAM_HPP

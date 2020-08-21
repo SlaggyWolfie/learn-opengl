@@ -1,7 +1,8 @@
 #pragma once
-#ifndef DISPLAY_NORMALS_PROGRAM_HPP
-#define DISPLAY_NORMALS_PROGRAM_HPP
-#include "Program.hpp"
+#ifndef SKYBOX_PROGRAM_HPP
+#define SKYBOX_PROGRAM_HPP
+
+#include <programs/Program.hpp>
 
 #include <string>
 #include <stdexcept>
@@ -16,18 +17,18 @@
 
 class Camera;
 
-class DisplayNormalsProgram : public Program
+class SkyboxProgram : public Program
 {
 public:
 	using color = glm::vec3;
 	using color4 = glm::vec4;
 
 	const int INIT_ERROR = -1;
-	const int INITIAL_SCREEN_WIDTH = 800;
-	const int INITIAL_SCREEN_HEIGHT = 600;
+	const unsigned int INITIAL_SCREEN_WIDTH = 800;
+	const unsigned int INITIAL_SCREEN_HEIGHT = 600;
 
 	// green-ish color
-	const color4 _defaultClearColor{ 0.1f, 0.1f, 0.1f, 1.0f };
+	const color4 _defaultClearColor{ 0.2f, 0.3f, 0.3f, 1.0f };
 	color4 _clearColor = _defaultClearColor;
 
 	float mix_ratio = 0.2f;
@@ -68,4 +69,4 @@ public:
 
 	int run() override;
 };
-#endif DISPLAY_NORMALS_PROGRAM_HPP
+#endif SKYBOX_PROGRAM_HPP

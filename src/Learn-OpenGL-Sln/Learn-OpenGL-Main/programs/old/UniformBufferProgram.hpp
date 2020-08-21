@@ -1,7 +1,8 @@
 #pragma once
 #ifndef UNIFORM_BUFFER_PROGRAM_HPP
 #define UNIFORM_BUFFER_PROGRAM_HPP
-#include "Program.hpp"
+
+#include <programs/Program.hpp>
 
 #include <string>
 #include <stdexcept>

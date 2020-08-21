@@ -1,6 +1,7 @@
 //#include "programs/DisplayNormalsProgram.hpp"
 //#include "programs/InstancingProgram.hpp"
 #include "programs/AsteroidFieldProgram.hpp"
+#include "programs/ReusedProgram.hpp"
 
 int main(int argc, char* argv[])
 {

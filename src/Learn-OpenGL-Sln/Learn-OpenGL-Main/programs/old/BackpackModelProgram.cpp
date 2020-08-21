@@ -254,7 +254,6 @@ int BackpackModelProgram::run()
 
 		parse_light_attenuation(litShader, "spotlight.attenuation", lightRange);
 
-
 		glm::mat4 model(1);
 		//model = glm::translate(model, glm::vec3(0));
 		//model = glm::scale(model, glm::vec3(1));

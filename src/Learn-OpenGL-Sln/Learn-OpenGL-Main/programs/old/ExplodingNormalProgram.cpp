@@ -1,4 +1,4 @@
-#include "ExplodingModelProgram.hpp"
+#include "ExplodingNormalProgram.hpp"
 
 #include <iostream>
 
@@ -12,7 +12,7 @@
 #include <engine/Model.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-int ExplodingModelProgram::run()
+int ExplodingNormalProgram::run()
 {
 	// Initialize GLFW context with OpenGL version 3.3 using the Core OpenGL profile
 	glfwInit();
@@ -42,19 +42,19 @@ int ExplodingModelProgram::run()
 
 	auto framebufferResize = [](GLFWwindow* window, const int w, const int h)
 	{
-		static_cast<ExplodingModelProgram*>(glfwGetWindowUserPointer(window))->
+		static_cast<ExplodingNormalProgram*>(glfwGetWindowUserPointer(window))->
 			framebuffer_size_callback(window, w, h);
 	};
 
 	auto mouse = [](GLFWwindow* window, const double x, const double y)
 	{
-		static_cast<ExplodingModelProgram*>(glfwGetWindowUserPointer(window))->
+		static_cast<ExplodingNormalProgram*>(glfwGetWindowUserPointer(window))->
 			mouse_callback(window, x, y);
 	};
 
 	auto scroll = [](GLFWwindow* window, const double x, const double y)
 	{
-		static_cast<ExplodingModelProgram*>(glfwGetWindowUserPointer(window))->
+		static_cast<ExplodingNormalProgram*>(glfwGetWindowUserPointer(window))->
 			scroll_callback(window, x, y);
 	};
 
@@ -136,12 +136,12 @@ int ExplodingModelProgram::run()
 	return 0;
 }
 
-void ExplodingModelProgram::framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
+void ExplodingNormalProgram::framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
 {
 	glViewport(0, 0, width, height);
 }
 
-void ExplodingModelProgram::process_input(GLFWwindow* window)
+void ExplodingNormalProgram::process_input(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -175,7 +175,7 @@ void ExplodingModelProgram::process_input(GLFWwindow* window)
 		camera->processMovement(Camera::movement(direction), shiftPressed, deltaTime);
 }
 
-void ExplodingModelProgram::mouse_callback(GLFWwindow*, const double x, const double y)
+void ExplodingNormalProgram::mouse_callback(GLFWwindow*, const double x, const double y)
 {
 	if (firstMouse)
 	{
@@ -193,13 +193,13 @@ void ExplodingModelProgram::mouse_callback(GLFWwindow*, const double x, const do
 	camera->processOrientation(offset);
 }
 
-void ExplodingModelProgram::scroll_callback(GLFWwindow*, const double, const double yOffset)
+void ExplodingNormalProgram::scroll_callback(GLFWwindow*, const double, const double yOffset)
 {
 	camera->processZoom(float(yOffset));
 }
 
 // The following code is from: https://github.com/graphitemaster/normals_revisited
-float ExplodingModelProgram::matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2)
+float ExplodingNormalProgram::matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2)
 {
 	return
 		m[4 * r0 + c0] * (m[4 * r1 + c1] * m[4 * r2 + c2] - m[4 * r2 + c1] * m[4 * r1 + c2]) -
@@ -207,7 +207,7 @@ float ExplodingModelProgram::matrix_minor(const float m[16], int r0, int r1, int
 		m[4 * r0 + c2] * (m[4 * r1 + c0] * m[4 * r2 + c1] - m[4 * r2 + c0] * m[4 * r1 + c1]);
 }
 
-void ExplodingModelProgram::matrix_cofactor(const float src[16], float dst[16])
+void ExplodingNormalProgram::matrix_cofactor(const float src[16], float dst[16])
 {
 	dst[0] = matrix_minor(src, 1, 2, 3, 1, 2, 3);
 	dst[1] = -matrix_minor(src, 1, 2, 3, 0, 2, 3);
@@ -227,7 +227,7 @@ void ExplodingModelProgram::matrix_cofactor(const float src[16], float dst[16])
 	dst[15] = matrix_minor(src, 0, 1, 2, 0, 1, 2);
 }
 
-unsigned int ExplodingModelProgram::loadTexture(const std::string& path)
+unsigned int ExplodingNormalProgram::loadTexture(const std::string& path)
 {
 	unsigned int textureID = 0;
 	glGenTextures(1, &textureID);
@@ -272,7 +272,7 @@ unsigned int ExplodingModelProgram::loadTexture(const std::string& path)
 	return textureID;
 }
 
-unsigned int ExplodingModelProgram::loadCubemap(const std::vector<std::string>& pathsToTexturesFaces)
+unsigned int ExplodingNormalProgram::loadCubemap(const std::vector<std::string>& pathsToTexturesFaces)
 {
 	unsigned int cubemapTextureID = 0;
 	glGenTextures(1, &cubemapTextureID);
