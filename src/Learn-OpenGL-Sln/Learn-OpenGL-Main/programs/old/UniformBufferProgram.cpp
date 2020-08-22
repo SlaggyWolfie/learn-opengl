@@ -158,10 +158,10 @@ int UniformBufferProgram::run()
 
 	camera = new Camera(glm::vec3(0, 0, 3));
 
-	const Shader shaderRed("shaders/ubo.vert", "shaders/ubo_red.frag");
-	const Shader shaderGreen("shaders/ubo.vert", "shaders/ubo_green.frag");
-	const Shader shaderBlue("shaders/ubo.vert", "shaders/ubo_blue.frag");
-	const Shader shaderYellow("shaders/ubo.vert", "shaders/ubo_yellow.frag");
+	const Shader shaderRed("shaders/ubo.vert", "shaders/color_red.frag");
+	const Shader shaderGreen("shaders/ubo.vert", "shaders/color_green.frag");
+	const Shader shaderBlue("shaders/ubo.vert", "shaders/color_blue.frag");
+	const Shader shaderYellow("shaders/ubo.vert", "shaders/color_yellow.frag");
 
 	const unsigned int uniformBlockIndexRed = glGetUniformBlockIndex(shaderRed.id, "Matrices");
 	const unsigned int uniformBlockIndexGreen = glGetUniformBlockIndex(shaderGreen.id, "Matrices");

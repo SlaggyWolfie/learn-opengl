@@ -1,11 +1,8 @@
-//#include "programs/DisplayNormalsProgram.hpp"
-//#include "programs/InstancingProgram.hpp"
-#include "programs/AsteroidFieldProgram.hpp"
-#include "programs/ReusedProgram.hpp"
+#include "programs/NativeMultisamplingProgram.hpp"
 
 int main(int argc, char* argv[])
 {
-	Program* program = new AsteroidFieldProgram();
+	Program* program = new NativeMultisamplingProgram();
 
 	const int result = program->run();
 	delete program;

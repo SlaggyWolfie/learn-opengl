@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="programs\NativeMultisamplingProgram.cpp" />
     <ClCompile Include="programs\AsteroidFieldProgram.cpp" />
     <ClCompile Include="programs\old\BackpackModelProgram.cpp" />
     <ClCompile Include="engine\Camera.cpp" />
@@ -159,6 +160,7 @@
     <ClCompile Include="programs\old\UniformBufferProgram.cpp" />
     <ClCompile Include="programs\old\EmptyProgram.cpp" />
     <ClCompile Include="programs\ReusedProgram.cpp" />
+    <ClInclude Include="programs\NativeMultisamplingProgram.hpp" />
     <ClInclude Include="programs\AsteroidFieldProgram.hpp" />
     <ClInclude Include="programs\old\BackpackModelProgram.hpp" />
     <ClCompile Include="programs\old\RearViewStencilingProgram.cpp" />

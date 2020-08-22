@@ -38,6 +38,7 @@ public:
 
 	Camera* camera = nullptr;
 
+	bool initGLWindow(GLFWwindow*& window, int& errorCode);
 	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 	void process_input(GLFWwindow* window);
 	void mouse_callback(GLFWwindow*, double x, double y);

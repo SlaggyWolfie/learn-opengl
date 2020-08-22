@@ -12,6 +12,77 @@
 #include <engine/Model.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+bool ReusedProgram::initGLWindow(GLFWwindow*& window, int& errorCode)
+{
+	// Initialize GLFW context with OpenGL version 3.3 using the Core OpenGL profile
+	glfwInit();
+
+	//-----Setup-----//
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// MacOS-specific code
+#ifdef __APPLE__
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+	window = glfwCreateWindow(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT, "My OpenGL Window!", nullptr, nullptr);
+	if (window == nullptr)
+	{
+		std::cout << "Failed to create GLFW window." << std::endl;
+		glfwTerminate();
+		errorCode = INIT_ERROR;
+		return true;
+	}
+
+	// Set viewport size within window and assign resize function
+	glfwMakeContextCurrent(window);
+	glfwSetWindowUserPointer(window, this);
+
+	auto framebufferResize = [](GLFWwindow* window, const int w, const int h)
+	{
+		static_cast<ReusedProgram*>(glfwGetWindowUserPointer(window))->
+			framebuffer_size_callback(window, w, h);
+	};
+
+	auto mouse = [](GLFWwindow* window, const double x, const double y)
+	{
+		static_cast<ReusedProgram*>(glfwGetWindowUserPointer(window))->
+			mouse_callback(window, x, y);
+	};
+
+	auto scroll = [](GLFWwindow* window, const double x, const double y)
+	{
+		static_cast<ReusedProgram*>(glfwGetWindowUserPointer(window))->
+			scroll_callback(window, x, y);
+	};
+
+	glfwSetFramebufferSizeCallback(window, framebufferResize);
+	glfwSetCursorPosCallback(window, mouse);
+	glfwSetScrollCallback(window, scroll);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPos(window, lastMousePosition.x, lastMousePosition.y);
+
+	// Initialize GLAD — btw, black magic with this case as noted above
+	if (!gladLoadGLLoader(GLADloadproc(glfwGetProcAddress)))
+	{
+		std::cout << "Failed to initialize GLAD." << std::endl;
+		errorCode = INIT_ERROR;
+		return true;
+	}
+
+	// > configure global OpenGL state
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_CULL_FACE);
+
+	stbi_set_flip_vertically_on_load(1);
+	return false;
+}
+
 void ReusedProgram::framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
 {
 	glViewport(0, 0, width, height);

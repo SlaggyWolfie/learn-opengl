@@ -75,6 +75,9 @@
     <ClCompile Include="programs\old\ExplodingNormalProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="programs\NativeMultisamplingProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">
@@ -141,6 +144,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="programs\old\ExplodingNormalProgram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="programs\NativeMultisamplingProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
