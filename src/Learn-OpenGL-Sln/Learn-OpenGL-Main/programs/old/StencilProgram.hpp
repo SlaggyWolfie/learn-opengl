@@ -18,7 +18,7 @@
 
 class Camera;
 
-class StencilProgram : Program
+class StencilProgram : public Program
 {
 public:
 	using color = glm::vec3;

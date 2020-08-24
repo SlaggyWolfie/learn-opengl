@@ -16,7 +16,7 @@
 
 class Camera;
 
-class RearViewStencilingProgram : Program
+class RearViewStencilingProgram : public Program
 {
 public:
 	using color = glm::vec3;

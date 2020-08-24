@@ -148,8 +148,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="programs\NativeMultisamplingProgram.cpp" />
     <ClCompile Include="programs\AsteroidFieldProgram.cpp" />
+    <ClCompile Include="programs\NativeMultisamplingProgram.cpp" />
     <ClCompile Include="programs\old\BackpackModelProgram.cpp" />
     <ClCompile Include="engine\Camera.cpp" />
     <ClCompile Include="glad.c" />
@@ -161,8 +161,9 @@
     <ClCompile Include="programs\old\EmptyProgram.cpp" />
     <ClCompile Include="programs\ReusedProgram.cpp" />
     <ClCompile Include="programs\CustomMultisamplingProgram.cpp" />
-    <ClInclude Include="programs\NativeMultisamplingProgram.hpp" />
+    <ClCompile Include="programs\LightingTestBlinnPhongProgram.cpp" />
     <ClInclude Include="programs\AsteroidFieldProgram.hpp" />
+    <ClInclude Include="programs\NativeMultisamplingProgram.hpp" />
     <ClInclude Include="programs\old\BackpackModelProgram.hpp" />
     <ClCompile Include="programs\old\RearViewStencilingProgram.cpp" />
     <ClCompile Include="programs\old\StencilProgram.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="programs\old\DisplayNormalsProgram.hpp" />
     <ClInclude Include="programs\ReusedProgram.hpp" />
     <ClInclude Include="programs\CustomMultisamplingProgram.hpp" />
+    <ClInclude Include="programs\LightingTestBlinnPhongProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\Camera.hpp" />

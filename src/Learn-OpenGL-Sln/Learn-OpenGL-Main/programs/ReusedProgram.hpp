@@ -38,9 +38,9 @@ public:
 
 	Camera* camera = nullptr;
 
-	bool initGLWindow(GLFWwindow*& window, int& errorCode);
+	virtual bool initGLWindow(GLFWwindow*& window, int& errorCode);
+	virtual void process_input(GLFWwindow* window);
 	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-	void process_input(GLFWwindow* window);
 	void mouse_callback(GLFWwindow*, double x, double y);
 	void scroll_callback(GLFWwindow*, double, double yOffset);
 
@@ -51,7 +51,7 @@ public:
 
 	// https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 	template<typename ... Args>
-	std::string string_format(const std::string& format, Args ... args)
+	static std::string string_format(const std::string& format, Args ... args)
 	{
 		const size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
 		if (size <= 0) { throw std::runtime_error("Error during formatting."); }

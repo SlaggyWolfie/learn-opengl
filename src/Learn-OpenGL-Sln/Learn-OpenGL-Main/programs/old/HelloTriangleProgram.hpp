@@ -10,7 +10,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-class HelloTriangleProgram final : Program
+class HelloTriangleProgram final : public Program
 {
 public:
 	const int INIT_ERROR = -1;

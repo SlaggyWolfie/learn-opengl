@@ -1,9 +1,8 @@
-#include "programs/NativeMultisamplingProgram.hpp"
-#include "programs/CustomMultisamplingProgram.hpp"
+#include "programs/LightingTestBlinnPhongProgram.hpp"
 
 int main(int argc, char* argv[])
 {
-	Program* program = new CustomMultisamplingProgram();
+	Program* program = new LightingTestBlinnPhongProgram();
 
 	const int result = program->run();
 	delete program;

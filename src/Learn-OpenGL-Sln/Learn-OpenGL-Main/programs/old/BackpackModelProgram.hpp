@@ -18,7 +18,7 @@
 class Shader;
 class Camera;
 
-class BackpackModelProgram : Program
+class BackpackModelProgram : public Program
 {
 public:
 	using color = glm::vec3;
