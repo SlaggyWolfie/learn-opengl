@@ -139,15 +139,37 @@ int CustomMultisamplingProgram::run()
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "ERROR::FRAMEBUFFER: Incomplete framebuffer!" << std::endl;
+		std::cout << "ERROR::FRAMEBUFFER:: Incomplete framebuffer!" << std::endl;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	// second post-processing fbo
+	unsigned intermediateFBO;
+	glGenFramebuffers(1, &intermediateFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+
+	// another color attachment texture
+	unsigned texScreen;
+	glGenTextures(1, &texScreen);
+	glBindTexture(GL_TEXTURE_2D, texScreen);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texScreen, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Incomplete intermediate framebuffer!" << std::endl;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
 	const Shader cubeShader("shaders/color_predef.vert", "shaders/color_green.frag");
 	cubeShader.use();
 	cubeShader.set("model", model);
 
-	//const Shader screenShader("")
+	const Shader screenShader("shaders/aa_post");
+	screenShader.use();
+	screenShader.set("screenTexture", 0);
 
 	// Program Loop (Render Loop)
 	double lastFrame = glfwGetTime();
@@ -180,12 +202,25 @@ int CustomMultisamplingProgram::run()
 
 		// 2. Blit MS buffer(s) into normal color buffer
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
 		glBlitFramebuffer(
 			0, 0, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT,
 			0, 0, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT,
 			GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
+		// 3. render quad with scene as its texture image
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(1, 1, 1, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+		
+		// 4. draw screen quad
+		screenShader.use();
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texScreen);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		
 		// double buffering, and poll IO events
 		glfwSwapBuffers(window);
 		glfwPollEvents();
