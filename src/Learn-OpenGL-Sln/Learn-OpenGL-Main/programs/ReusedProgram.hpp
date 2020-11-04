@@ -47,7 +47,7 @@ public:
 	static float matrix_minor(const float m[16], int r0, int r1, int r2, int c0, int c1, int c2);
 	static void matrix_cofactor(const float src[16], float dst[16]);
 
-	static unsigned int loadTexture(const std::string& path);
+	static unsigned int loadTexture(const std::string& path, bool applyGammaCorrection = false);
 
 	// https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 	template<typename ... Args>

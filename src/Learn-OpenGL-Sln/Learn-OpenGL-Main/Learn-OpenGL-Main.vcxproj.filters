@@ -78,10 +78,13 @@
     <ClCompile Include="programs\CustomMultisamplingProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="programs\AsteroidFieldProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="programs\LightingTestBlinnPhongProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="programs\AsteroidFieldProgram.cpp">
+    <ClCompile Include="programs\GammaCorrectionBlingPhonProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -155,10 +158,13 @@
     <ClInclude Include="programs\CustomMultisamplingProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="programs\AsteroidFieldProgram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="programs\LightingTestBlinnPhongProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="programs\AsteroidFieldProgram.hpp">
+    <ClInclude Include="programs\GammaCorrectionBlingPhonProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -24,7 +24,7 @@ void main()
 
 	vec3 n_lightDirection = normalize(lightPosition - fs_in.fragmentPosition);
 	vec3 n_normal = normalize(fs_in.normal);
-
+	
 	float diff = max(dot(n_lightDirection, n_normal), 0.0);
 	vec3 diffuse = diff * color;
 
@@ -34,7 +34,7 @@ void main()
 	if (isBlinn)
 	{
 		vec3 n_halfwayDirection = normalize(n_lightDirection + n_viewDirection);
-		spec = pow(max(dot(n_normal, n_halfwayDirection), 0.0), 32.0);
+		spec = pow(max(dot(n_normal, n_halfwayDirection), 0.0), 16.0);
 	}
 	else
 	{
