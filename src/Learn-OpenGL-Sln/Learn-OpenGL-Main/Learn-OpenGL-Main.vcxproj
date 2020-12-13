@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="programs\AsteroidFieldProgram.cpp" />
+    <ClCompile Include="programs\GammaCorrectionBlinnPhongProgram.cpp" />
     <ClCompile Include="programs\LightingTestBlinnPhongProgram.cpp" />
     <ClCompile Include="programs\NativeMultisamplingProgram.cpp" />
     <ClCompile Include="programs\old\BackpackModelProgram.cpp" />
@@ -162,8 +163,9 @@
     <ClCompile Include="programs\old\EmptyProgram.cpp" />
     <ClCompile Include="programs\ReusedProgram.cpp" />
     <ClCompile Include="programs\CustomMultisamplingProgram.cpp" />
-    <ClCompile Include="programs\GammaCorrectionBlingPhonProgram.cpp" />
+    <ClCompile Include="programs\ShadowMappingProgram.cpp" />
     <ClInclude Include="programs\AsteroidFieldProgram.hpp" />
+    <ClInclude Include="programs\GammaCorrectionBlinnPhongProgram.hpp" />
     <ClInclude Include="programs\LightingTestBlinnPhongProgram.hpp" />
     <ClInclude Include="programs\NativeMultisamplingProgram.hpp" />
     <ClInclude Include="programs\old\BackpackModelProgram.hpp" />
@@ -178,7 +180,7 @@
     <ClInclude Include="programs\old\DisplayNormalsProgram.hpp" />
     <ClInclude Include="programs\ReusedProgram.hpp" />
     <ClInclude Include="programs\CustomMultisamplingProgram.hpp" />
-    <ClInclude Include="programs\GammaCorrectionBlingPhonProgram.hpp" />
+    <ClInclude Include="programs\ShadowMappingProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\Camera.hpp" />

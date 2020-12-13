@@ -1,4 +1,4 @@
-#include "GammaCorrectionBlingPhonProgram.hpp"
+#include "GammaCorrectionBlinnPhongProgram.hpp"
 
 #include <iostream>
 
@@ -9,13 +9,13 @@
 #include <engine/Camera.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-int GammaCorrectionBlingPhonProgram::run()
+int GammaCorrectionBlinnPhongProgram::run()
 {
 	GLFWwindow* window;	int errorCode;
 	if (initGLWindow(window, errorCode)) return errorCode;
 
 	//glEnable(GL_FRAMEBUFFER_SRGB);
-	
+
 	camera = new Camera(glm::vec3(0, 0, 3));
 
 	const glm::mat4 identity(1);
@@ -59,15 +59,15 @@ int GammaCorrectionBlingPhonProgram::run()
 	shader.set("textureSampler", 0);
 
 	const unsigned maxLights = 4;
-	const glm::vec3 lightPositions[] = 
+	const glm::vec3 lightPositions[] =
 	{
 		glm::vec3(-3.0f, 0.0f, 0.0f),
 		glm::vec3(-1.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 0.0f, 0.0f),
 		glm::vec3(3.0f, 0.0f, 0.0f)
 	};
-	
-	const glm::vec3 lightColors[] = 
+
+	const glm::vec3 lightColors[] =
 	{
 		glm::vec3(0.25),
 		glm::vec3(0.50),
@@ -125,7 +125,7 @@ int GammaCorrectionBlingPhonProgram::run()
 	return 0;
 }
 
-void GammaCorrectionBlingPhonProgram::process_input(GLFWwindow* window)
+void GammaCorrectionBlinnPhongProgram::process_input(GLFWwindow* window)
 {
 	ReusedProgram::process_input(window);
 
