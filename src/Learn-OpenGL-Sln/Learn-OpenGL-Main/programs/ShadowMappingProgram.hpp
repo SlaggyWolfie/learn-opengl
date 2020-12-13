@@ -7,10 +7,6 @@
 class ShadowMappingProgram : public ReusedProgram
 {
 public:
-	bool isGammaCorrectionOn = true;
-	bool gammaKeyPressed = false;
-
 	int run() override;
-	void process_input(GLFWwindow* window) override;
 };
 #endif

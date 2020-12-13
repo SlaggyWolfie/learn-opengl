@@ -87,14 +87,20 @@ int ShadowMappingProgram::run()
 	const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
 	const unsigned floorTex = loadTexture("assets/textures/wood.png", false);
-	const unsigned floorTexGammaCorrected = loadTexture("assets/textures/wood.png", true);
 
 	const Shader shader("shaders/litBlinnPhongGamma");
 	shader.use();
 	shader.set("textureSampler", 0);
 
 	const Shader simpleDepthShader("shaders/simpleDepthShader");
+	simpleDepthShader.use();
+	simpleDepthShader.set("lightSpaceMatrix", lightSpaceMatrix);
+	
 	const Shader debugDepthQuad("shaders/debugDepthQuad");
+	debugDepthQuad.use();
+	debugDepthQuad.set("textureSampler", 0);
+	debugDepthQuad.set("nearPlane", nearPlane);
+	debugDepthQuad.set("farPlane", farPlane);
 
 	// Program Loop (Render Loop)
 	double lastFrame = glfwGetTime();
@@ -108,14 +114,13 @@ int ShadowMappingProgram::run()
 
 		// 1. render to depth map
 		simpleDepthShader.use();
-		glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 
 		glViewport(0, 0, SHADOW_TEX_WIDTH, SHADOW_TEX_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 
 		glClear(GL_DEPTH_BUFFER_BIT);
-
-		// shaders & matrices
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, floorTex);
 		renderScene(simpleDepthShader, planeVAO);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -127,8 +132,6 @@ int ShadowMappingProgram::run()
 
 		// 2.1 render depth map to quad for debugging
 		debugDepthQuad.use();
-		debugDepthQuad.set("nearPlane", nearPlane);
-		debugDepthQuad.set("farPlane", farPlane);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMapTex);
 		renderQuad();
@@ -154,11 +157,10 @@ int ShadowMappingProgram::run()
 		shader.set("projection", projection);
 
 		shader.set("viewPosition", camera->position);
-		shader.set("gamma", isGammaCorrectionOn);
-
+		
 		glBindVertexArray(planeVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, isGammaCorrectionOn ? floorTexGammaCorrected : floorTex);
+		glBindTexture(GL_TEXTURE_2D, floorTex);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		// double buffering, and poll IO events
@@ -269,10 +271,11 @@ void renderCube()
 		glGenVertexArrays(1, &cubeVAO);
 		glGenBuffers(1, &cubeVBO);
 
+		glBindVertexArray(cubeVAO);
+		
 		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-		glBindVertexArray(cubeVAO);
+		
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 
@@ -327,22 +330,4 @@ void renderQuad()
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
-}
-
-void ShadowMappingProgram::process_input(GLFWwindow* window)
-{
-	ReusedProgram::process_input(window);
-
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && !gammaKeyPressed)
-	{
-		isGammaCorrectionOn = !isGammaCorrectionOn;
-		gammaKeyPressed = true;
-
-		std::cout << (isGammaCorrectionOn ? "Gamma enabled" : "Gamma disabled") << std::endl;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE)
-	{
-		gammaKeyPressed = false;
-	}
 }
