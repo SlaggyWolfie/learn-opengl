@@ -19,6 +19,7 @@ int ShadowMappingProgram::run()
 	if (initGLWindow(window, errorCode)) return errorCode;
 
 	//glEnable(GL_FRAMEBUFFER_SRGB);
+	glEnable(GL_CULL_FACE);
 
 	camera = new Camera(glm::vec3(0, 0, 3));
 
@@ -29,13 +30,13 @@ int ShadowMappingProgram::run()
 	const float planeVertices[] =
 	{
 		// positions            // normals         // texcoords
-		 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-		-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-		-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+		 25.0f, -0.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+		-25.0f, -0.0f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+		-25.0f, -0.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
 
-		 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-		-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-		 25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+		 25.0f, -0.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+		-25.0f, -0.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+		 25.0f, -0.0f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 	};
 
 	unsigned planeVAO, planeVBO;
@@ -115,18 +116,20 @@ int ShadowMappingProgram::run()
 		process_input(window);
 
 		// 1. render to depth map
-		simpleDepthShader.use();
+		glCullFace(GL_FRONT);
 
 		glViewport(0, 0, SHADOW_TEX_WIDTH, SHADOW_TEX_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 
+		simpleDepthShader.use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, floorTex);
 		renderScene(simpleDepthShader, planeVAO);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glCullFace(GL_BACK);
 
 		// 2. render scene normally but with shadows
 		glViewport(0, 0, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
@@ -173,13 +176,18 @@ int ShadowMappingProgram::run()
 void renderScene(const Shader& shader, const unsigned planeVAO)
 {
 	glm::mat4 model = glm::mat4(1);
-	shader.set("model", model);
 
 	auto set = [&]() { shader.set("model", model); };
 	auto identity = [&]() { model = glm::mat4(1); };
 	auto translate = [&](const glm::vec3& v) { model = glm::translate(model, v); };
-	auto scale = [&](const float s) { model = glm::scale(model, glm::vec3(s)); };
+	auto scalev = [&](const glm::vec3& v) { model = glm::scale(model, v); };
+	auto scale = [&](const float s) { scalev(glm::vec3(s)); };
 
+	//scalev(glm::vec3(1, -1, 1));
+	translate(glm::vec3(0, -0.5f, 0));
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1, 0, 0));
+	
+	shader.set("model", model);
 	glBindVertexArray(planeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
