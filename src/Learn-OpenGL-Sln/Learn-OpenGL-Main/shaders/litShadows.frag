@@ -51,12 +51,13 @@ float ShadowCalc(vec4 fragmentPositionLightSpace, vec3 normal, vec3 lightDirecti
 	vec3 projectedCoords = fragmentPositionLightSpace.xyz / fragmentPositionLightSpace.w;
 	// [0; 1]
 	projectedCoords = projectedCoords * 0.5 + 0.5;
+	float currentDepth = projectedCoords.z;
+	if (currentDepth > 1) return 0;
 
 	float minBias = 0.005, maxBias = 0.05;
 	float bias = max(maxBias * (1 - dot(normal, lightDirection)), minBias);
 
 	float closestDepth = texture(shadowMap, projectedCoords.xy).r;
-	float currentDepth = projectedCoords.z;
 	float shadow = currentDepth - bias > closestDepth ? 1 : 0;
 
 	return shadow;
