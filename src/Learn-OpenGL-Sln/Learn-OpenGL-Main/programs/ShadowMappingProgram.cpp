@@ -76,26 +76,28 @@ int ShadowMappingProgram::run()
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	const glm::vec3 lightPosition(-2, 4, -1);
+
 	const float nearPlane = 1.f, farPlane = 7.5f;
 	const glm::mat4 lightProjection = glm::ortho(-10.f, 10.f, -10.f, 10.f, nearPlane, farPlane);
-	const glm::mat4 lightView = glm::lookAt(
-		glm::vec3(-2, 4, -1),
-		glm::vec3(0),
-		glm::vec3(0, 1, 0)
-	);
+	const glm::mat4 lightView = glm::lookAt(lightPosition, glm::vec3(0), glm::vec3(0, 1, 0));
 
 	const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
 	const unsigned floorTex = loadTexture("assets/textures/wood.png", false);
 
-	const Shader shader("shaders/litBlinnPhongGamma");
+	const Shader shader("shaders/litShadows");
 	shader.use();
 	shader.set("textureSampler", 0);
+	shader.set("shadowMap", 1);
+
+	shader.set("lightPosition", lightPosition);
+	shader.set("lightSpaceMatrix", lightSpaceMatrix);
 
 	const Shader simpleDepthShader("shaders/simpleDepthShader");
 	simpleDepthShader.use();
 	simpleDepthShader.set("lightSpaceMatrix", lightSpaceMatrix);
-	
+
 	const Shader debugDepthQuad("shaders/debugDepthQuad");
 	debugDepthQuad.use();
 	debugDepthQuad.set("textureSampler", 0);
@@ -119,6 +121,7 @@ int ShadowMappingProgram::run()
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 
 		glClear(GL_DEPTH_BUFFER_BIT);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, floorTex);
 		renderScene(simpleDepthShader, planeVAO);
@@ -127,41 +130,30 @@ int ShadowMappingProgram::run()
 
 		// 2. render scene normally but with shadows
 		glViewport(0, 0, INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
+		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// shaders & matrices
+
+		view = camera->viewMatrix();
+		projection = glm::perspective(glm::radians(camera->fov),
+			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 1000.0f);
+
+		shader.use();
+		shader.set("view", view);
+		shader.set("projection", projection);
+		shader.set("viewPosition", camera->position);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, floorTex);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, depthMapTex);
+
+		renderScene(shader, planeVAO);
 
 		// 2.1 render depth map to quad for debugging
 		debugDepthQuad.use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMapTex);
-		renderQuad();
-
-		// double buffering, and poll IO events
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-
-		continue;
-
-		// Pre-input calculations | Critical
-		view = camera->viewMatrix();
-		projection = glm::perspective(glm::radians(camera->fov),
-			float(INITIAL_SCREEN_WIDTH) / float(INITIAL_SCREEN_HEIGHT), 0.1f, 1000.0f);
-
-		// rendering
-		glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		shader.use();
-		shader.set("model", model);
-		shader.set("view", view);
-		shader.set("projection", projection);
-
-		shader.set("viewPosition", camera->position);
-		
-		glBindVertexArray(planeVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, floorTex);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//renderQuad();
 
 		// double buffering, and poll IO events
 		glfwSwapBuffers(window);
@@ -272,10 +264,9 @@ void renderCube()
 		glGenBuffers(1, &cubeVBO);
 
 		glBindVertexArray(cubeVAO);
-		
 		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		
+
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 
