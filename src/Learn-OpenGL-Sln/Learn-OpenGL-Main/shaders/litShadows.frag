@@ -17,12 +17,12 @@ uniform sampler2D shadowMap;
 uniform vec3 lightPosition;
 uniform vec3 viewPosition;
 
-float ShadowCalc(vec4 fragmentPositionLightSpace);
+float ShadowCalc(vec4 fragmentPositionLightSpace, vec3 normal, vec3 lightDirection);
 
 void main()
 {
 	vec3 color = texture(textureSampler, fs_in.textureCoordinate).rgb;
-	vec3 lightColor = vec3(1);
+	vec3 lightColor = vec3(0.3);
 
 	vec3 ambient = 0.15 * color;
 
@@ -35,16 +35,16 @@ void main()
 	vec3 n_viewDirection = normalize(viewPosition - fs_in.fragmentPosition);
 
 	vec3 reflectionDirection = reflect(-n_lightDirection, n_normal);
-	float spec = pow(max(dot(n_viewDirection, reflectionDirection), 0.0), 8.0);
+	float spec = pow(max(dot(n_viewDirection, reflectionDirection), 0.0), 64.0);
 	vec3 specular = lightColor * spec; 
 	
-	vec3 lighting = ambient + diffuse + specular;
+	float shadowed = ShadowCalc(fs_in.fragmentPositionLightSpace, n_normal, n_lightDirection);
+	vec3 lighting = ambient  + (1 - shadowed) * (diffuse + specular);
 
-	float shadowed = ShadowCalc(fs_in.fragmentPositionLightSpace);
-	fragmentColor = vec4(lighting + (1 - shadowed) * (diffuse + specular), 1);
+	fragmentColor = vec4(lighting, 1);
 } 
 
-float ShadowCalc(vec4 fragmentPositionLightSpace)
+float ShadowCalc(vec4 fragmentPositionLightSpace, vec3 normal, vec3 lightDirection)
 {
 	// > perform perspective divide (for NDC)
 	// [-1; 1]
@@ -52,9 +52,12 @@ float ShadowCalc(vec4 fragmentPositionLightSpace)
 	// [0; 1]
 	projectedCoords = projectedCoords * 0.5 + 0.5;
 
+	float minBias = 0.005, maxBias = 0.05;
+	float bias = max(maxBias * (1 - dot(normal, lightDirection)), minBias);
+
 	float closestDepth = texture(shadowMap, projectedCoords.xy).r;
 	float currentDepth = projectedCoords.z;
-	float shadow = currentDepth > closestDepth ? 1 : 0;
+	float shadow = currentDepth - bias > closestDepth ? 1 : 0;
 
 	return shadow;
 }
