@@ -19,6 +19,15 @@ uniform float farPlane;
 
 uniform bool shadowsOn;
 
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+); 
+
 float ShadowCalc(vec3 fragmentPosition);
 
 void main()
@@ -57,34 +66,23 @@ float ShadowCalc(vec3 fragmentPosition)
 	// > we use a much larger bias since depth is now in [near_plane, far_plane] range
 	float bias = 0.05;
 	float shadow = 0;
-	float samples = 4;
-	float offset = 0.1;
+	int samples = 20;
 
-	// 64 samples, which is insane and bad
-	for (float x = -offset; x < offset; x += offset / (samples * 0.5))
+	float viewDistance = length(viewPosition - fragmentPosition);
+	float diskRadius = (1 + (viewDistance / farPlane)) / 25.0;
+
+	for (int i = 0; i < samples; ++i)
 	{
-		for (float y = -offset; y < offset; y += offset / (samples * 0.5))
-		{
-			for (float z = -offset; z < offset; z += offset / (samples * 0.5))
-			{
-			
-				// > use the fragment to light vector + surrounding area to sample from the depth map  
-				float closestDepth = texture(cubeShadowMap, fragmentToLight + vec3(x, y, z)).r;
-				
-				// > it is currently in linear range between [0,1], let's re-transform it back to original depth value
-				closestDepth *= farPlane;
+		// > use the fragment to light vector + surrounding area to sample from the depth map  
+		float closestDepth = texture(cubeShadowMap, fragmentToLight + sampleOffsetDirections[i] * diskRadius).r;
 
-				if (currentDepth - bias > closestDepth) shadow++;
-			}
-		}
+		// > it is currently in linear range between [0,1], let's re-transform it back to original depth value
+		closestDepth *= farPlane;
+
+		if (currentDepth - bias > closestDepth) shadow++;
 	}
-
-	shadow /= (samples * samples * samples); // shadow /= 64
-
-//	float shadow = currentDepth - bias > closestDepth ? 1 : 0;
-	       
-    // > display closestDepth as debug (to visualize depth cubemap)
-	// fragmentColor = vec4(vec3(closestDepth / farPlane), 1.0);    
+	
+	shadow /= float(samples); // shadow /= 20
 
 	return shadow;
 
