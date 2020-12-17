@@ -43,7 +43,7 @@ void main()
 	float shadowed = shadowsOn ? ShadowCalc(fs_in.fragmentPosition) : 0;
 	vec3 lighting = ambient  + (1 - shadowed) * (diffuse + specular);
 
-	fragmentColor = vec4(lighting, 1);
+//	fragmentColor = vec4(lighting, 1);
 } 
 
 float ShadowCalc(vec3 fragmentPosition)
@@ -60,12 +60,12 @@ float ShadowCalc(vec3 fragmentPosition)
 	// > now get current linear depth as the length between the fragment and light position
 	float currentDepth = length(fragmentToLight);
 	
-	// we use a much larger bias since depth is now in [near_plane, far_plane] range
+	// > we use a much larger bias since depth is now in [near_plane, far_plane] range
 	float bias = 0.05;
 	float shadow = currentDepth - bias > closestDepth ? 1 : 0;
 	       
-    // display closestDepth as debug (to visualize depth cubemap)
-    // FragColor = vec4(vec3(closestDepth / far_plane), 1.0);    
+    // > display closestDepth as debug (to visualize depth cubemap)
+    fragmentColor = vec4(vec3(closestDepth / farPlane), 1.0);    
 
 	return shadow;
 
