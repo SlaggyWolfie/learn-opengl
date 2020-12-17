@@ -84,10 +84,13 @@
     <ClCompile Include="programs\LightingTestBlinnPhongProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="programs\ShadowMappingProgram.cpp">
+    <ClCompile Include="programs\GammaCorrectionBlinnPhongProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="programs\GammaCorrectionBlinnPhongProgram.cpp">
+    <ClCompile Include="programs\PointShadowsProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="programs\ShadowMappingProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -167,10 +170,13 @@
     <ClInclude Include="programs\LightingTestBlinnPhongProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="programs\ShadowMappingProgram.hpp">
+    <ClInclude Include="programs\GammaCorrectionBlinnPhongProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="programs\GammaCorrectionBlinnPhongProgram.hpp">
+    <ClInclude Include="programs\PointShadowsProgram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="programs\ShadowMappingProgram.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

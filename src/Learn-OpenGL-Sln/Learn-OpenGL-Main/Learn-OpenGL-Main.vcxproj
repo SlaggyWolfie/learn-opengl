@@ -163,7 +163,7 @@
     <ClCompile Include="programs\old\EmptyProgram.cpp" />
     <ClCompile Include="programs\ReusedProgram.cpp" />
     <ClCompile Include="programs\CustomMultisamplingProgram.cpp" />
-    <ClCompile Include="programs\ShadowMappingProgram.cpp" />
+    <ClCompile Include="programs\PointShadowsProgram.cpp" />
     <ClInclude Include="programs\AsteroidFieldProgram.hpp" />
     <ClInclude Include="programs\GammaCorrectionBlinnPhongProgram.hpp" />
     <ClInclude Include="programs\LightingTestBlinnPhongProgram.hpp" />
@@ -176,11 +176,12 @@
     <ClCompile Include="engine\Shader.cpp" />
     <ClCompile Include="programs\old\HelloTriangleProgram.cpp" />
     <ClCompile Include="programs\old\SkyboxProgram.cpp" />
+    <ClCompile Include="programs\ShadowMappingProgram.cpp" />
     <ClCompile Include="stb_image.cpp" />
     <ClInclude Include="programs\old\DisplayNormalsProgram.hpp" />
     <ClInclude Include="programs\ReusedProgram.hpp" />
     <ClInclude Include="programs\CustomMultisamplingProgram.hpp" />
-    <ClInclude Include="programs\ShadowMappingProgram.hpp" />
+    <ClInclude Include="programs\PointShadowsProgram.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\Camera.hpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="engine\Shader.hpp" />
     <ClInclude Include="helpers\BasicMaterialLibrary.hpp" />
     <ClInclude Include="programs\old\SkyboxProgram.hpp" />
+    <ClInclude Include="programs\ShadowMappingProgram.hpp" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="programs\old\UniformBufferProgram.hpp" />
     <ClInclude Include="programs\old\EmptyProgram.hpp" />
