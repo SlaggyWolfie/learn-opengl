@@ -43,29 +43,48 @@ void main()
 	float shadowed = shadowsOn ? ShadowCalc(fs_in.fragmentPosition) : 0;
 	vec3 lighting = ambient  + (1 - shadowed) * (diffuse + specular);
 
-//	fragmentColor = vec4(lighting, 1);
+	fragmentColor = vec4(lighting, 1);
 } 
 
 float ShadowCalc(vec3 fragmentPosition)
 {
     // > get vector between fragment position and light position
 	vec3 fragmentToLight = fragmentPosition - lightPosition;
-	
-    // > use the fragment to light vector to sample from the depth map    
-	float closestDepth = texture(cubeShadowMap, fragmentToLight).r;
-
-	// > it is currently in linear range between [0,1], let's re-transform it back to original depth value
-	closestDepth *= farPlane;
 
 	// > now get current linear depth as the length between the fragment and light position
 	float currentDepth = length(fragmentToLight);
 	
 	// > we use a much larger bias since depth is now in [near_plane, far_plane] range
 	float bias = 0.05;
-	float shadow = currentDepth - bias > closestDepth ? 1 : 0;
+	float shadow = 0;
+	float samples = 4;
+	float offset = 0.1;
+
+	// 64 samples, which is insane and bad
+	for (float x = -offset; x < offset; x += offset / (samples * 0.5))
+	{
+		for (float y = -offset; y < offset; y += offset / (samples * 0.5))
+		{
+			for (float z = -offset; z < offset; z += offset / (samples * 0.5))
+			{
+			
+				// > use the fragment to light vector + surrounding area to sample from the depth map  
+				float closestDepth = texture(cubeShadowMap, fragmentToLight + vec3(x, y, z)).r;
+				
+				// > it is currently in linear range between [0,1], let's re-transform it back to original depth value
+				closestDepth *= farPlane;
+
+				if (currentDepth - bias > closestDepth) shadow++;
+			}
+		}
+	}
+
+	shadow /= (samples * samples * samples); // shadow /= 64
+
+//	float shadow = currentDepth - bias > closestDepth ? 1 : 0;
 	       
     // > display closestDepth as debug (to visualize depth cubemap)
-    fragmentColor = vec4(vec3(closestDepth / farPlane), 1.0);    
+	// fragmentColor = vec4(vec3(closestDepth / farPlane), 1.0);    
 
 	return shadow;
 
